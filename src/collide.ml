@@ -1,4 +1,5 @@
 open General.Abbr
+open Collide_
 
 let () = Exn.record_backtraces true
 
@@ -18,7 +19,6 @@ let draw_frame ?event format =
 let () = begin
   let simulation = Simulation.(create
     ~dimensions:(640., 480.)
-    ~date:0.
     Ball.[
       {radius=40.; density=1.; position=(320., 240.); speed=(100., 90.)};
     ]

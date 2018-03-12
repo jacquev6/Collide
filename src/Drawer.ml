@@ -38,7 +38,7 @@ module Make(C: JsOfOCairo.S) = struct
   let draw_event ~context = function
     | Simulation.Event.BallBallCollision _ ->
       Exn.failure "@todo Implement"
-    | Simulation.Event.BallWallCollision {wall=_; before={Simulation.Ball.speed=(sx, sy); _}; after={Simulation.Ball.position=(x, y); _}} -> begin
+    | Simulation.Event.WallBallCollision {wall=_; before={Simulation.Ball.speed=(sx, sy); _}; after={Simulation.Ball.position=(x, y); _}} -> begin
       C.save context;
       C.set_line_width context 1.;
       C.move_to context ~x ~y;

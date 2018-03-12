@@ -7,6 +7,7 @@ opam install --yes JsOfOCairo General jbuilder bisect_ppx bisect-summary lablgtk
 
 clear
 
+jbuilder runtest --dev
 jbuilder build --dev src/collide.bc
 rm -f *.png
 RATE=25

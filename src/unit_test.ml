@@ -1,0 +1,50 @@
+open General.Abbr
+open Tst
+open Collide_
+
+module T = struct
+  let test = "Collide" >:: [
+    "Simulation" >:: Simulation.[
+      "Single-ball" >:: (
+        let make name max_date initial_ball expected_events expected_ball =
+          name >: (lazy (
+            let simulation = create ~dimensions:(400., 300.) [initial_ball] in
+            let simulation = 
+              expected_events
+              |> Li.fold ~init:simulation ~f:(fun simulation (expected_date, expected_event) ->
+                let (actual_event, simulation) = advance ~max_date simulation in
+                check_some_poly ~repr:Event.repr ~expected:expected_event actual_event;
+                check_float ~expected:expected_date (date simulation);
+                simulation
+              )
+            in
+            let (actual_event, simulation) = advance ~max_date simulation in
+            check_none_poly ~repr:Event.repr actual_event;
+            check_float ~expected:max_date (date simulation);
+            check_list_poly ~repr:Ball.repr ~expected:[expected_ball] (balls simulation)
+          ))
+        in
+        [
+          make "advance" 2.
+            {Ball.radius=10.; density=1.; position=(40., 60.); speed=(1., 2.)}
+            []
+            {Ball.radius=10.; density=1.; position=(42., 64.); speed=(1., 2.)};
+          make "hit right wall" 2.
+            {Ball.radius=10.; density=1.; position=(389., 60.); speed=(1., 2.)}
+            [
+              (1., Event.WallBallCollision {
+                wall=Right;
+                before={Ball.radius=10.00; density=1.00; position=(390.00, 62.00); speed=(1.00, 2.00)};
+                after={Ball.radius=10.00; density=1.00; position=(390.00, 62.00); speed=(-1.00, 2.00)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(389., 64.); speed=(-1., 2.)};
+        ]
+      );
+    ];
+  ]
+end
+
+let () =
+  let argv = Li.of_array OCamlStandard.Sys.argv in
+  Exit.exit (command_line_main ~argv T.test)

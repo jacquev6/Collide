@@ -8,6 +8,12 @@ module Public = struct
       | Right
       | Top
       | Bottom
+
+    let repr = function
+      | Left -> "Left"
+      | Right -> "Right"
+      | Top -> "Top"
+      | Bottom -> "Bottom"
   end
 
   module Ball = struct
@@ -17,6 +23,11 @@ module Public = struct
       position: float * float;
       speed: float * float;
     }
+
+    let repr {radius; density; position=(x, y); speed=(sx, sy)} =
+      Frmt.apply
+        "{radius=%.2f; density=%.2f; position=(%.2f, %.2f); speed=(%.2f, %.2f)}"
+        radius density x y sx sy
   end
 
   module Event = struct
@@ -25,11 +36,17 @@ module Public = struct
         before: Ball.t * Ball.t;
         after: Ball.t * Ball.t;
       }
-      | BallWallCollision of {
+      | WallBallCollision of {
         wall: Wall.t;
         before: Ball.t;
         after: Ball.t;
       }
+
+    let repr = function
+      | BallBallCollision _ ->
+        Exn.failure "@todo Implement"
+      | WallBallCollision {wall; before; after} ->
+        Frmt.apply "{wall=%s; before=%s; after=%s}" (Wall.repr wall) (Ball.repr before) (Ball.repr after)
   end
 end
 
@@ -41,12 +58,6 @@ module Internal = struct
     include Public.Wall
 
     let all = [Left; Right; Top; Bottom]
-
-    let repr = function
-      | Left -> "Left"
-      | Right -> "Right"
-      | Top -> "Top"
-      | Bottom -> "Bottom"
   end
 
   module Ball = struct
@@ -121,7 +132,7 @@ module Internal = struct
       | WallBall {wall; ball_index} ->
         let before = Ball.to_public ~date balls_before.(ball_index)
         and after = Ball.to_public ~date balls_after.(ball_index) in
-        Public.Event.BallWallCollision {wall; before; after}
+        Public.Event.WallBallCollision {wall; before; after}
 
     let apply ~date balls = function
       | WallBall {wall; ball_index} ->
@@ -193,8 +204,9 @@ module Internal = struct
       )
     )
 
-  let create ~dimensions ~date balls =
+  let create ~dimensions balls =
     assert (Li.size balls = 1); (* We're ignoring ball-ball collisions for now, so we make sure we have just one ball. *)
+    let date = 0. in
     let balls = Li.map ~f:(Ball.of_public ~date) balls in
     let events =
       balls

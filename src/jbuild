@@ -1,6 +1,25 @@
 (jbuild_version 1)
 
+(library (
+  (name Collide_)
+  (modules (Drawer Simulation))
+  (libraries (General JsOfOCairo))
+))
+
 (executable (
   (name collide)
-  (libraries (General JsOfOCairo cairo2))
+  (modules (collide))
+  (libraries (cairo2 Collide_))
+))
+
+(executable (
+  (name unit_test)
+  (modules (unit_test))
+  (libraries (Collide_))
+))
+
+(alias (
+  (name runtest)
+  (deps (unit_test.bc))
+  (action (run ${exe:unit_test.bc}))
 ))

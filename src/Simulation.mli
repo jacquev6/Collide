@@ -4,6 +4,8 @@ module Wall: sig
     | Right
     | Top
     | Bottom
+
+  val repr: t -> string
 end
 
 module Ball: sig
@@ -13,11 +15,13 @@ module Ball: sig
     position: float * float;
     speed: float * float;
   }
+
+  val repr: t -> string
 end
 
 type t
 
-val create: dimensions:float * float -> date:float -> Ball.t list -> t
+val create: dimensions:float * float -> Ball.t list -> t
 
 module Event: sig
   type t =
@@ -25,11 +29,13 @@ module Event: sig
       before: Ball.t * Ball.t;
       after: Ball.t * Ball.t;
     }
-    | BallWallCollision of {
+    | WallBallCollision of {
       wall: Wall.t;
       before: Ball.t;
       after: Ball.t;
     }
+
+  val repr: t -> string
 end
 
 val dimensions: t -> float * float

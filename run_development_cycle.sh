@@ -9,4 +9,11 @@ clear
 
 jbuilder build --dev src/collide.bc
 rm -f *.png
-_build/default/src/collide.bc
+RATE=25
+DURATION=20
+_build/default/src/collide.bc $RATE $DURATION
+# rm -f callgrind.out.*
+# valgrind --tool=callgrind _build/default/src/collide.bc $RATE $DURATION
+# kcachegrind callgrind.out.*
+ffmpeg -y -r $RATE -i %08d.png video.avi
+rm -f *.png

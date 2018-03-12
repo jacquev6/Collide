@@ -34,6 +34,21 @@ module Public = struct
 end
 
 module Internal = struct
+  let log format =
+    StdOut.print ~flush:true format
+
+  module Wall = struct
+    include Public.Wall
+
+    let all = [Left; Right; Top; Bottom]
+
+    let repr = function
+      | Left -> "Left"
+      | Right -> "Right"
+      | Top -> "Top"
+      | Bottom -> "Bottom"
+  end
+
   module Ball = struct
     type t = {
       radius: float;
@@ -43,10 +58,16 @@ module Internal = struct
       speed: float * float;
     }
 
+    (* let repr {radius; density; date; position=(x, y); speed=(sx, sy)} =
+      Frmt.apply
+        "{radius=%.2f; density=%.2f; date=%.2f; position=(%.2f, %.2f); speed=(%.2f, %.2f)}"
+        radius density date x y sx sy *)
+
     let of_public ~date {Public.Ball.radius; density; position; speed} =
       {radius; density; date; position; speed}
 
     let position ~date {date=t0; position=(x, y); speed=(sx, sy); _} =
+      (* log "Ball.position ~date:%.2f %s\n" date (repr ball); *)
       assert (date >= t0);
       let dt = date -. t0 in
       let x = x +. dt *. sx
@@ -58,73 +79,66 @@ module Internal = struct
       {Public.Ball.radius; density; position; speed}
   end
 
-  module Event = struct
-    module Wall = struct
-      type dir =
-        | Horizontal
-        | Vertical
-
-      type loc =
-        | Low
-        | High
-
-      type t = dir * loc
-
-      let to_public = function
-        | (Horizontal, Low) -> Public.Wall.Top
-        | (Horizontal, High) -> Public.Wall.Bottom
-        | (Vertical, Low) -> Public.Wall.Left
-        | (Vertical, High) -> Public.Wall.Right
-
-      let next ~direction ~dimensions {Ball.radius; density=_; date; position; speed} =
-        let getter =
-          match direction with
-            | Horizontal -> Tu2.get_1
-            | Vertical -> Tu2.get_0
+  module Collision = struct
+    module WallBall = struct
+      let next ~dimensions:(w, h) (wall: Wall.t) {Ball.radius; density=_; date; position=(x, y); speed=(sx, sy)} =
+        let (dimension, position, speed) =
+          match wall with
+            | Left | Right -> (w, x, sx)
+            | Top | Bottom -> (h, y, sy)
         in
-        let dimension = getter dimensions
-        and position = getter position
-        and speed = getter speed in
-        assert (0. +. radius <= position);
-        assert (position <= dimension -. radius);
-        if speed > 0. then
-          Some (date +. ((dimension -. radius) -. position) /. speed, (direction, High))
-        else if speed < 0. then
-          Some (date +. (position -. (0. +. radius)) /. speed, (direction, Low))
-        else
-          None
+        let target_position =
+          match wall with
+            | Left | Top -> 0. +. radius
+            | Right | Bottom -> dimension -. radius
+        in
+        Opt.some_if' (speed <> 0.) (date +. (target_position -. position) /. speed)
 
-      let apply ~date ~ball wall =
+      let apply ~date (wall: Wall.t) ball =
         let position = Ball.position ~date ball
         and speed =
           let (sx, sy) = ball.Ball.speed in
           match wall with
-            | (Horizontal, _) -> (sx, -.sy)
-            | (Vertical, _) -> (-.sx, sy)
+            | Left -> assert (sx < 0.); (-.sx, sy)
+            | Right -> assert (sx > 0.); (-.sx, sy)
+            | Top -> assert (sy < 0.); (sx, -.sy)
+            | Bottom -> assert (sy > 0.); (sx, -.sy)
         in
         {ball with date; position; speed}
     end
 
     type t =
-      | Wall of {
-        ball_index: int;
+      | WallBall of {
         wall: Wall.t;
+        ball_index: int;
       }
 
+    let repr = function
+      | WallBall {wall; ball_index} ->
+        Frmt.apply "WallBall {wall=%s; ball_index=%i}" (Wall.repr wall) ball_index
+
     let to_public ~date ~balls_before ~balls_after = function
-      | Wall {ball_index; wall} ->
-        assert (ball_index = 0);
-        let wall = Wall.to_public wall
-        and before = Ball.to_public ~date balls_before.(ball_index)
+      | WallBall {wall; ball_index} ->
+        let before = Ball.to_public ~date balls_before.(ball_index)
         and after = Ball.to_public ~date balls_after.(ball_index) in
         Public.Event.BallWallCollision {wall; before; after}
 
     let apply ~date balls = function
-      | Wall {ball_index; wall} ->
-        assert (ball_index = 0);
+      | WallBall {wall; ball_index} ->
         let balls = OCSA.copy balls in
-        balls.(ball_index) <- Wall.apply ~date ~ball:balls.(ball_index) wall;
-        balls
+        balls.(ball_index) <- WallBall.apply ~date wall balls.(ball_index);
+        (balls, [ball_index])
+  end
+
+  module Event = struct
+    type t = {
+      scheduled_at: float;
+      happens_at: float;
+      collision: Collision.t;
+    }
+
+    let repr {scheduled_at; happens_at; collision} =
+      Frmt.apply "{scheduled_at=%.2f; happens_at=%.2f; collision=%s}" scheduled_at happens_at (Collision.repr collision)
   end
 
   module EventQueue = struct
@@ -138,11 +152,14 @@ module Internal = struct
 
     let empty = PQ.empty
 
-    let add events ~date ~event =
-      PQ.add events ~k:date ~v:event
+    let add events ~event =
+      let k = event.Event.happens_at in
+      PQ.add events ~k ~v:event
 
     let next events =
-      PQ.max events
+      events
+      |> PQ.max
+      |> Tu2.get_1
 
     let pop_next events =
       PQ.pop_max events
@@ -158,20 +175,31 @@ module Internal = struct
     events: EventQueue.t
   }
 
-  let create ?(date=0.) ~dimensions balls =
+  let schedule_wall_ball_collisions ?this_collision ~dimensions ~date ~events ball_index ball =
+    Wall.all
+    |> Li.fold ~init:events ~f:(fun events wall ->
+      Collision.WallBall.next ~dimensions wall ball
+      |> Opt.value_map ~def:events ~f:(fun happens_at ->
+        if happens_at < date then events else
+        let collision = Collision.WallBall {wall; ball_index} in
+        if this_collision = Some collision then events else
+        let event = {
+          Event.scheduled_at=date;
+          happens_at;
+          collision;
+        } in
+        log "Scheduling %s\n" (Event.repr event);
+        EventQueue.add events ~event
+      )
+    )
+
+  let create ~dimensions ~date balls =
     assert (Li.size balls = 1); (* We're ignoring ball-ball collisions for now, so we make sure we have just one ball. *)
     let balls = Li.map ~f:(Ball.of_public ~date) balls in
     let events =
       balls
       |> Li.fold_i ~init:EventQueue.empty ~f:(fun ~i events ball ->
-        Event.Wall.[Vertical; Horizontal]
-        |> Li.fold ~init:events ~f:(fun events direction ->
-          Event.Wall.next ~direction ~dimensions ball
-          |> Opt.value_map ~def:events ~f:(fun (date, wall) ->
-            assert (i = 0);
-            EventQueue.add events ~date ~event:(Event.Wall {ball_index=i; wall})
-          )
-        )
+        schedule_wall_ball_collisions ~dimensions ~date ~events i ball
       )
     and balls =
       Li.to_array balls
@@ -189,15 +217,37 @@ module Internal = struct
     |> Li.of_array
     |> Li.map ~f:(Ball.to_public ~date)
 
-  let advance ({events; balls=balls_before; _} as simulation) ~max_date =
-    let (date, event) = EventQueue.next events in
-    if date < max_date then
-      let balls_after = Event.apply ~date balls_before event in
-      let event = Event.to_public ~date ~balls_before ~balls_after event
+  let skip_canceled_events ~balls events =
+    let rec aux events =
+      let ({Event.scheduled_at; collision; _} as event) = EventQueue.next events in
+      match collision with
+        | Collision.WallBall {ball_index; _} ->
+          if balls.(ball_index).Ball.date > scheduled_at then begin
+            log "Skipping %s\n" (Event.repr event);
+            aux (EventQueue.pop_next events)
+          end else
+            events
+    in
+    aux events
+
+  let advance ({dimensions; events; balls; _} as simulation) ~max_date =
+    let events = skip_canceled_events ~balls events in
+    let ({Event.happens_at; collision; _} as event) = EventQueue.next events in
+    if happens_at < max_date then begin
+      log "Executing %s\n" (Event.repr event);
+      let date = happens_at in
+      let (balls_after, impacted_ball_indexes) = Collision.apply ~date balls collision in
+      let event = Collision.to_public ~date ~balls_before:balls ~balls_after collision
       and events = EventQueue.pop_next events in
+      let events =
+        impacted_ball_indexes
+        |> Li.fold ~init:events ~f:(fun events ball_index ->
+          schedule_wall_ball_collisions ~this_collision:collision ~dimensions ~date ~events ball_index balls_after.(ball_index)
+        )
+      in
       (Some event, {simulation with date; balls=balls_after; events})
-    else
-      (None, {simulation with date=max_date})
+    end else
+      (None, {simulation with date=max_date; events})
 end
 
 include Public

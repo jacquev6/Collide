@@ -17,7 +17,7 @@ end
 
 type t
 
-val create: ?date:float -> dimensions:float * float -> Ball.t list -> t
+val create: dimensions:float * float -> date:float -> Ball.t list -> t
 
 module Event: sig
   type t =

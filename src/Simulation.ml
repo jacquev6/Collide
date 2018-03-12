@@ -46,7 +46,7 @@ module Public = struct
       | BallBallCollision _ ->
         Exn.failure "@todo Implement"
       | WallBallCollision {wall; before; after} ->
-        Frmt.apply "{wall=%s; before=%s; after=%s}" (Wall.repr wall) (Ball.repr before) (Ball.repr after)
+        Frmt.apply "WallBallCollision {wall=%s; before=%s; after=%s}" (Wall.repr wall) (Ball.repr before) (Ball.repr after)
   end
 end
 

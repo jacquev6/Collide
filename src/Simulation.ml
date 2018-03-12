@@ -183,17 +183,18 @@ module Internal = struct
     At each event, we're copying the entire array to modify just a few balls.
     With a map we would share large parts of the tree between successive states. *)
     balls: Ball.t array;
-    events: EventQueue.t
+    events: EventQueue.t;
+    collisions_at_date: Collision.t SoSet.Poly.t;
   }
 
-  let schedule_wall_ball_collisions ?this_collision ~dimensions ~date ~events ball_index ball =
+  let schedule_wall_ball_collisions ~dimensions ~date ~collisions_at_date ~events ball_index ball =
     Wall.all
     |> Li.fold ~init:events ~f:(fun events wall ->
       Collision.WallBall.next ~dimensions wall ball
       |> Opt.value_map ~def:events ~f:(fun happens_at ->
         if happens_at < date then events else
         let collision = Collision.WallBall {wall; ball_index} in
-        if this_collision = Some collision then events else
+        if SoSet.Poly.contains collisions_at_date ~v:collision then events else
         let event = {
           Event.scheduled_at=date;
           happens_at;
@@ -205,18 +206,20 @@ module Internal = struct
     )
 
   let create ~dimensions balls =
+    log "Creating\n";
     assert (Li.size balls = 1); (* We're ignoring ball-ball collisions for now, so we make sure we have just one ball. *)
-    let date = 0. in
+    let date = 0.
+    and collisions_at_date = SoSet.Poly.empty in
     let balls = Li.map ~f:(Ball.of_public ~date) balls in
     let events =
       balls
       |> Li.fold_i ~init:EventQueue.empty ~f:(fun ~i events ball ->
-        schedule_wall_ball_collisions ~dimensions ~date ~events i ball
+        schedule_wall_ball_collisions ~dimensions ~date ~collisions_at_date ~events i ball
       )
     and balls =
       Li.to_array balls
     in
-    {dimensions; date; balls; events}
+    {dimensions; date; balls; events; collisions_at_date}
 
   let dimensions {dimensions; _} =
     dimensions
@@ -242,10 +245,17 @@ module Internal = struct
     in
     aux events
 
-  let advance ({dimensions; events; balls; _} as simulation) ~max_date =
+  let advance ({dimensions; date; events; balls; collisions_at_date} as simulation) ~max_date =
+    log "Advancing to %.2f\n" max_date;
     let events = skip_canceled_events ~balls events in
     let ({Event.happens_at; collision; _} as event) = EventQueue.next events in
     if happens_at < max_date then begin
+      let collisions_at_date =
+        if happens_at > date then
+          SoSet.Poly.of_list [collision]
+        else
+          SoSet.Poly.replace collisions_at_date ~v:collision
+      in
       log "Executing %s\n" (Event.repr event);
       let date = happens_at in
       let (balls_after, impacted_ball_indexes) = Collision.apply ~date balls collision in
@@ -254,10 +264,10 @@ module Internal = struct
       let events =
         impacted_ball_indexes
         |> Li.fold ~init:events ~f:(fun events ball_index ->
-          schedule_wall_ball_collisions ~this_collision:collision ~dimensions ~date ~events ball_index balls_after.(ball_index)
+          schedule_wall_ball_collisions ~collisions_at_date ~dimensions ~date ~events ball_index balls_after.(ball_index)
         )
       in
-      (Some event, {simulation with date; balls=balls_after; events})
+      (Some event, {simulation with date; balls=balls_after; events; collisions_at_date})
     end else
       (None, {simulation with date=max_date; events})
 end

@@ -25,7 +25,7 @@ let () = begin
   ) in
   let images_per_second = Int.of_string OCamlStandard.Sys.argv.(1)
   and duration = Int.of_string OCamlStandard.Sys.argv.(2) in
-  IntRa.make (duration * images_per_second)
+  IntRa.make (duration * images_per_second + 1)
   |> IntRa.fold ~init:simulation ~f:(fun simulation i ->
     let max_date = Fl.of_int i /. Fl.of_int images_per_second in
     let rec aux j simulation =

@@ -69,6 +69,22 @@ module T = struct
               });
             ]
             {Ball.radius=10.; density=1.; position=(102., 288.); speed=(1., -2.)};
+          make "hit corner" 2.
+            (* @todo After this test, two identical events are scheduled (happens_at=381.). Find a way to cancel one of them. Run simulation until then and ensure things go well. *)
+            {Ball.radius=10.; density=1.; position=(389., 288.); speed=(1., 2.)}
+            [
+              (1., Event.WallBallCollision {
+                wall=Right;
+                before={Ball.radius=10.; density=1.; position=(390., 290.); speed=(1., 2.)};
+                after={Ball.radius=10.; density=1.; position=(390., 290.); speed=(-1., 2.)}
+              });
+              (1., Event.WallBallCollision {
+                wall=Bottom;
+                before={Ball.radius=10.; density=1.; position=(390., 290.); speed=(-1., 2.)};
+                after={Ball.radius=10.; density=1.; position=(390., 290.); speed=(-1., -2.)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(389., 288.); speed=(-1., -2.)};
         ]
       );
     ];

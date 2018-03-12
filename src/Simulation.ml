@@ -1,4 +1,5 @@
 open General.Abbr
+module OCSA = OCamlStandard.ArrayLabels
 
 module Public = struct
   module Wall = struct
@@ -33,20 +34,97 @@ module Public = struct
 end
 
 module Internal = struct
-  module Event = struct
-    type dir =
-      | Horizontal
-      | Vertical
+  module Ball = struct
+    type t = {
+      radius: float;
+      density: float;
+      date: float;
+      position: float * float;
+      speed: float * float;
+    }
 
-    type loc =
-      | Low
-      | High
+    let of_public ~date {Public.Ball.radius; density; position; speed} =
+      {radius; density; date; position; speed}
+
+    let position ~date {date=t0; position=(x, y); speed=(sx, sy); _} =
+      assert (date >= t0);
+      let dt = date -. t0 in
+      let x = x +. dt *. sx
+      and y = y +. dt *. sy in
+      (x, y)
+
+    let to_public ~date ({radius; density; speed; _} as ball) =
+      let position = position ~date ball in
+      {Public.Ball.radius; density; position; speed}
+  end
+
+  module Event = struct
+    module Wall = struct
+      type dir =
+        | Horizontal
+        | Vertical
+
+      type loc =
+        | Low
+        | High
+
+      type t = dir * loc
+
+      let to_public = function
+        | (Horizontal, Low) -> Public.Wall.Top
+        | (Horizontal, High) -> Public.Wall.Bottom
+        | (Vertical, Low) -> Public.Wall.Left
+        | (Vertical, High) -> Public.Wall.Right
+
+      let next ~direction ~dimensions {Ball.radius; density=_; date; position; speed} =
+        let getter =
+          match direction with
+            | Horizontal -> Tu2.get_1
+            | Vertical -> Tu2.get_0
+        in
+        let dimension = getter dimensions
+        and position = getter position
+        and speed = getter speed in
+        assert (0. +. radius <= position);
+        assert (position <= dimension -. radius);
+        if speed > 0. then
+          Some (date +. ((dimension -. radius) -. position) /. speed, (direction, High))
+        else if speed < 0. then
+          Some (date +. (position -. (0. +. radius)) /. speed, (direction, Low))
+        else
+          None
+
+      let apply ~date ~ball wall =
+        let position = Ball.position ~date ball
+        and speed =
+          let (sx, sy) = ball.Ball.speed in
+          match wall with
+            | (Horizontal, _) -> (sx, -.sy)
+            | (Vertical, _) -> (-.sx, sy)
+        in
+        {ball with date; position; speed}
+    end
 
     type t =
-      | BallWallCollision of {
-        ball: int;
-        wall: dir * loc;
+      | Wall of {
+        ball_index: int;
+        wall: Wall.t;
       }
+
+    let to_public ~date ~balls_before ~balls_after = function
+      | Wall {ball_index; wall} ->
+        assert (ball_index = 0);
+        let wall = Wall.to_public wall
+        and before = Ball.to_public ~date balls_before.(ball_index)
+        and after = Ball.to_public ~date balls_after.(ball_index) in
+        Public.Event.BallWallCollision {wall; before; after}
+
+    let apply ~date balls = function
+      | Wall {ball_index; wall} ->
+        assert (ball_index = 0);
+        let balls = OCSA.copy balls in
+        balls.(ball_index) <- Wall.apply ~date ~ball:balls.(ball_index) wall;
+        balls
   end
 
   module EventQueue = struct
@@ -66,43 +144,8 @@ module Internal = struct
     let next events =
       PQ.max events
 
-    (* let pop_next events =
-      PQ.pop_max events *)
-  end
-
-  module Ball = struct
-    type t = {
-      radius: float;
-      density: float;
-      date: float;
-      position: float * float;
-      speed: float * float;
-    }
-
-    let of_public ~date {Public.Ball.radius; density; position; speed} =
-      {radius; density; date; position; speed}
-
-    let to_public ~date {radius; density; date=t0; position=(x, y); speed=(sx, sy)} =
-      assert (date >= t0);
-      let dt = date -. t0 in
-      let x = x +. dt *. sx
-      and y = y +. dt *. sy in
-      {Public.Ball.radius; density; position=(x, y); speed=(sx, sy)}
-  end
-
-  module Collisions = struct
-    let wall getter ~dimensions {Ball.radius; density=_; date; position; speed} =
-      let dimension = getter dimensions
-      and position = getter position
-      and speed = getter speed in
-      assert (0. +. radius <= position);
-      assert (position <= dimension -. radius);
-      if speed > 0. then
-        Some (Event.High, date +. ((dimension -. radius) -. position) /. speed)
-      else if speed < 0. then
-        Some (Event.Low, date +. (position -. (0. +. radius)) /. speed)
-      else
-        None
+    let pop_next events =
+      PQ.pop_max events
   end
 
   type t = {
@@ -121,19 +164,14 @@ module Internal = struct
     let events =
       balls
       |> Li.fold_i ~init:EventQueue.empty ~f:(fun ~i events ball ->
-        let events =
-          Collisions.wall Tu2.get_0 ~dimensions ball
-          |> Opt.value_map ~def:events ~f:(fun (loc, date) ->
-            EventQueue.add events ~date ~event:(Event.BallWallCollision {ball=i; wall=(Vertical, loc)})
+        Event.Wall.[Vertical; Horizontal]
+        |> Li.fold ~init:events ~f:(fun events direction ->
+          Event.Wall.next ~direction ~dimensions ball
+          |> Opt.value_map ~def:events ~f:(fun (date, wall) ->
+            assert (i = 0);
+            EventQueue.add events ~date ~event:(Event.Wall {ball_index=i; wall})
           )
-        in
-        let events =
-          Collisions.wall Tu2.get_1 ~dimensions ball
-          |> Opt.value_map ~def:events ~f:(fun (loc, date) ->
-            EventQueue.add events ~date ~event:(Event.BallWallCollision {ball=i; wall=(Horizontal, loc)})
-          )
-        in
-        events
+        )
       )
     and balls =
       Li.to_array balls
@@ -151,10 +189,13 @@ module Internal = struct
     |> Li.of_array
     |> Li.map ~f:(Ball.to_public ~date)
 
-  let advance ({events; _} as simulation) ~max_date =
-    let (next_date, _) = EventQueue.next events in
-    if next_date < max_date then
-      Exn.failure "@todo Implement"
+  let advance ({events; balls=balls_before; _} as simulation) ~max_date =
+    let (date, event) = EventQueue.next events in
+    if date < max_date then
+      let balls_after = Event.apply ~date balls_before event in
+      let event = Event.to_public ~date ~balls_before ~balls_after event
+      and events = EventQueue.pop_next events in
+      (Some event, {simulation with date; balls=balls_after; events})
     else
       (None, {simulation with date=max_date})
 end

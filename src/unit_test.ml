@@ -25,11 +25,66 @@ module T = struct
           ))
         in
         [
-          (* @todo Start with ball touching wall and/or corner *)
           make "advance" 2.
             {Ball.radius=10.; density=1.; position=(40., 60.); speed=(1., 2.)}
             []
             {Ball.radius=10.; density=1.; position=(42., 64.); speed=(1., 2.)};
+          make "start from left" 1.
+            {Ball.radius=10.; density=1.; position=(10., 150.); speed=(1., 0.)}
+            []
+            {Ball.radius=10.; density=1.; position=(11., 150.); speed=(1., 0.)};
+          make "start from top" 1.
+            {Ball.radius=10.; density=1.; position=(200., 10.); speed=(0., 1.)}
+            []
+            {Ball.radius=10.; density=1.; position=(200., 11.); speed=(0., 1.)};
+          make "start from right" 1.
+            {Ball.radius=10.; density=1.; position=(390., 150.); speed=(-1., 0.)}
+            []
+            {Ball.radius=10.; density=1.; position=(389., 150.); speed=(-1., 0.)};
+          make "start from bottom" 1.
+            {Ball.radius=10.; density=1.; position=(200., 290.); speed=(0., -1.)}
+            []
+            {Ball.radius=10.; density=1.; position=(200., 289.); speed=(0., -1.)};
+          make "start to left" 1.
+            {Ball.radius=10.; density=1.; position=(10., 150.); speed=(-1., 0.)}
+            [
+              (0., WallBallCollision {
+                wall=Left;
+                before={radius=10.; density=1.; position=(10., 150.); speed=(-1., 0.)};
+                after={radius=10.; density=1.; position=(10., 150.); speed=(1., 0.)};
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(11., 150.); speed=(1., 0.)};
+          make "start to top" 1.
+            {Ball.radius=10.; density=1.; position=(200., 10.); speed=(0., -1.)}
+            [
+              (0., WallBallCollision {
+                wall=Top;
+                before={radius=10.; density=1.; position=(200., 10.); speed=(0., -1.)};
+                after={radius=10.; density=1.; position=(200., 10.); speed=(0., 1.)};
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(200., 11.); speed=(0., 1.)};
+          make "start to right" 1.
+            {Ball.radius=10.; density=1.; position=(390., 150.); speed=(1., 0.)}
+            [
+              (0., WallBallCollision {
+                wall=Right;
+                before={radius=10.; density=1.; position=(390., 150.); speed=(1., 0.)};
+                after={radius=10.; density=1.; position=(390., 150.); speed=(-1., 0.)};
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(389., 150.); speed=(-1., 0.)};
+          make "start to bottom" 1.
+            {Ball.radius=10.; density=1.; position=(200., 290.); speed=(0., 1.)}
+            [
+              (0., WallBallCollision {
+                wall=Bottom;
+                before={radius=10.; density=1.; position=(200., 290.); speed=(0., 1.)};
+                after={radius=10.; density=1.; position=(200., 290.); speed=(0., -1.)};
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(200., 289.); speed=(0., -1.)};
           make "hit left wall" 2.
             {Ball.radius=10.; density=1.; position=(11., 60.); speed=(-1., 2.)}
             [

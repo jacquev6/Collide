@@ -98,12 +98,12 @@ module Internal = struct
             | Left | Right -> (w, x, sx)
             | Top | Bottom -> (h, y, sy)
         in
-        let target_position =
+        let (speed_sign, target_position) =
           match wall with
-            | Left | Top -> 0. +. radius
-            | Right | Bottom -> dimension -. radius
+            | Left | Top -> (-1., 0. +. radius)
+            | Right | Bottom -> (1., dimension -. radius)
         in
-        Opt.some_if' (speed <> 0.) (date +. (target_position -. position) /. speed)
+        Opt.some_if' (speed *. speed_sign > 0.) (date +. (target_position -. position) /. speed)
 
       let apply ~date (wall: Wall.t) ball =
         let position = Ball.position ~date ball

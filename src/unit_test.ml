@@ -29,16 +29,46 @@ module T = struct
             {Ball.radius=10.; density=1.; position=(40., 60.); speed=(1., 2.)}
             []
             {Ball.radius=10.; density=1.; position=(42., 64.); speed=(1., 2.)};
+          make "hit left wall" 2.
+            {Ball.radius=10.; density=1.; position=(11., 60.); speed=(-1., 2.)}
+            [
+              (1., Event.WallBallCollision {
+                wall=Left;
+                before={Ball.radius=10.; density=1.; position=(10., 62.); speed=(-1., 2.)};
+                after={Ball.radius=10.; density=1.; position=(10., 62.); speed=(1., 2.)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(11., 64.); speed=(1., 2.)};
           make "hit right wall" 2.
             {Ball.radius=10.; density=1.; position=(389., 60.); speed=(1., 2.)}
             [
               (1., Event.WallBallCollision {
                 wall=Right;
-                before={Ball.radius=10.00; density=1.00; position=(390.00, 62.00); speed=(1.00, 2.00)};
-                after={Ball.radius=10.00; density=1.00; position=(390.00, 62.00); speed=(-1.00, 2.00)}
+                before={Ball.radius=10.; density=1.; position=(390., 62.); speed=(1., 2.)};
+                after={Ball.radius=10.; density=1.; position=(390., 62.); speed=(-1., 2.)}
               });
             ]
             {Ball.radius=10.; density=1.; position=(389., 64.); speed=(-1., 2.)};
+          make "hit top wall" 2.
+            {Ball.radius=10.; density=1.; position=(100., 12.); speed=(1., -2.)}
+            [
+              (1., Event.WallBallCollision {
+                wall=Top;
+                before={Ball.radius=10.; density=1.; position=(101., 10.); speed=(1., -2.)};
+                after={Ball.radius=10.; density=1.; position=(101., 10.); speed=(1., 2.)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(102., 12.); speed=(1., 2.)};
+          make "hit bottom wall" 2.
+            {Ball.radius=10.; density=1.; position=(100., 288.); speed=(1., 2.)}
+            [
+              (1., Event.WallBallCollision {
+                wall=Bottom;
+                before={Ball.radius=10.; density=1.; position=(101., 290.); speed=(1., 2.)};
+                after={Ball.radius=10.; density=1.; position=(101., 290.); speed=(1., -2.)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(102., 288.); speed=(1., -2.)};
         ]
       );
     ];

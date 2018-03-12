@@ -34,12 +34,8 @@ end
 
 val dimensions: t -> float * float
 
+val date: t -> float
+
 val balls: t -> Ball.t list
 
-type advance = {
-  date: float;
-  event: Event.t option;
-  simulation: t;
-}
-
-val advance: t -> max_date:float -> advance
+val advance: t -> max_date:float -> Event.t option * t

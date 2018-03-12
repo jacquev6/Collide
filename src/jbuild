@@ -4,9 +4,3 @@
   (name collide)
   (libraries (General JsOfOCairo cairo2))
 ))
-
-(alias (
-  (name runtest)
-  (deps (collide.bc))
-  (action (run ${exe:collide.bc}))
-))

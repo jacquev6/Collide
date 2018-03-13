@@ -9,7 +9,7 @@ module T = struct
         let make name max_date initial_ball expected_events expected_ball =
           name >: (lazy (
             let simulation = create ~dimensions:(400., 300.) [initial_ball] in
-            let simulation = 
+            let simulation =
               expected_events
               |> Li.fold ~init:simulation ~f:(fun simulation (expected_date, expected_event) ->
                 let (actual_event, simulation) = advance ~max_date simulation in
@@ -245,6 +245,131 @@ module T = struct
               });
             ]
             {Ball.radius=10.; density=1.; position=(48., 38.); velocity=(38., 28.)};
+        ]
+      );
+      "Dual-ball" >:: (
+        let make name max_date initial_ball_1 initial_ball_2 expected_events expected_ball_1 expected_ball_2 =
+          name >: (lazy (
+            let simulation = create ~dimensions:(400., 300.) [initial_ball_1; initial_ball_2] in
+            let simulation =
+              expected_events
+              |> Li.fold ~init:simulation ~f:(fun simulation (expected_date, expected_event) ->
+                let (actual_event, simulation) = advance ~max_date simulation in
+                check_some_poly ~repr:Event.repr ~expected:expected_event actual_event;
+                check_float ~expected:expected_date (date simulation);
+                simulation
+              )
+            in
+            let (actual_event, simulation) = advance ~max_date simulation in
+            check_none_poly ~repr:Event.repr actual_event;
+            check_float ~expected:max_date (date simulation);
+            check_list_poly ~repr:Ball.repr ~expected:[expected_ball_1; expected_ball_2] (balls simulation)
+          ))
+        in
+        [
+          make "no collision of balls going in same direction" 2.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(1., 0.)}
+            []
+            {Ball.radius=10.; density=1.; position=(42., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(63., 100.); velocity=(1., 0.)};
+          make "no collision of balls going in same direction" 2.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(2., 0.)}
+            []
+            {Ball.radius=10.; density=1.; position=(42., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(65., 100.); velocity=(2., 0.)};
+          make "balls staying in contact" 2.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(60., 100.); velocity=(1., 0.)}
+            []
+            {Ball.radius=10.; density=1.; position=(42., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(62., 100.); velocity=(1., 0.)};
+          make "frontal horizontal collision of identical balls" 2.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(0., 0.)}
+            [
+              (1., BallBallCollision {
+                before=(
+                  {radius=10.; density=1.; position=(41., 100.); velocity=(1., 0.)},
+                  {radius=10.; density=1.; position=(61., 100.); velocity=(0., 0.)}
+                );
+                after=(
+                  {radius=10.; density=1.; position=(41., 100.); velocity=(0., 0.)},
+                  {radius=10.; density=1.; position=(61., 100.); velocity=(1., 0.)}
+                );
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(41., 100.); velocity=(0., 0.)}
+            {Ball.radius=10.; density=1.; position=(62., 100.); velocity=(1., 0.)};
+          make "frontal horizontal collision of identical balls" 2.
+            {Ball.radius=10.; density=1.; position=(39., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(-1., 0.)}
+            [
+              (1., BallBallCollision {
+                before=(
+                  {radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)},
+                  {radius=10.; density=1.; position=(60., 100.); velocity=(-1., 0.)}
+                );
+                after=(
+                  {radius=10.; density=1.; position=(40., 100.); velocity=(-1., 0.)},
+                  {radius=10.; density=1.; position=(60., 100.); velocity=(1., 0.)}
+                );
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(39., 100.); velocity=(-1., 0.)}
+            {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(1., 0.)};
+          make "frontal horizontal collision of identical balls" 1.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=1.; position=(60., 100.); velocity=(-1., 0.)}
+            [
+              (0., BallBallCollision {
+                before=(
+                  {radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)},
+                  {radius=10.; density=1.; position=(60., 100.); velocity=(-1., 0.)}
+                );
+                after=(
+                  {radius=10.; density=1.; position=(40., 100.); velocity=(-1., 0.)},
+                  {radius=10.; density=1.; position=(60., 100.); velocity=(1., 0.)}
+                );
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(39., 100.); velocity=(-1., 0.)}
+            {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(1., 0.)};
+          make "frontal horizontal collision of different balls of same mass" 2.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=100.; density=0.01; position=(151., 100.); velocity=(0., 0.)}
+            [
+              (1., BallBallCollision {
+                before=(
+                  {radius=10.; density=1.; position=(41., 100.); velocity=(1., 0.)},
+                  {radius=100.; density=0.01; position=(151., 100.); velocity=(0., 0.)}
+                );
+                after=(
+                  {radius=10.; density=1.; position=(41., 100.); velocity=(0., 0.)},
+                  {radius=100.; density=0.01; position=(151., 100.); velocity=(1., 0.)}
+                );
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(41., 100.); velocity=(0., 0.)}
+            {Ball.radius=100.; density=0.01; position=(152., 100.); velocity=(1., 0.)};
+          make "frontal horizontal collision of different balls of different mass" 2.
+            {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
+            {Ball.radius=10.; density=9.; position=(61., 100.); velocity=(0., 0.)}
+            [
+              (1., BallBallCollision {
+                before=(
+                  {radius=10.; density=1.; position=(41., 100.); velocity=(1., 0.)},
+                  {radius=10.; density=9.; position=(61., 100.); velocity=(0., 0.)}
+                );
+                after=(
+                  {radius=10.; density=1.; position=(41., 100.); velocity=(-0.80, 0.)},
+                  {radius=10.; density=9.; position=(61., 100.); velocity=(0.20, 0.)}
+                );
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(40.20, 100.); velocity=(-0.80, 0.)}
+            {Ball.radius=10.; density=9.; position=(61.20, 100.); velocity=(0.20, 0.)};
         ]
       );
     ];

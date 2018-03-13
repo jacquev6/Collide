@@ -21,7 +21,7 @@ module Public = struct
       radius: float;
       density: float;
       position: float * float;
-      speed: float * float;
+      speed: float * float; (* @todo Rename velocity (Speed is a scalar, velocity is a vector) *)
     }
 
     let repr {radius; density; position=(x, y); speed=(sx, sy)} =
@@ -78,7 +78,6 @@ module Internal = struct
       {radius; density; date; position; speed}
 
     let position ~date {date=t0; position=(x, y); speed=(sx, sy); _} =
-      (* log "Ball.position ~date:%.2f %s\n" date (repr ball); *)
       assert (date >= t0);
       let dt = date -. t0 in
       let x = x +. dt *. sx
@@ -119,23 +118,20 @@ module Internal = struct
     end
 
     type t =
-      | WallBall of {
-        wall: Wall.t;
-        ball_index: int;
-      }
+      | WallBall of Wall.t * int
 
     let repr = function
-      | WallBall {wall; ball_index} ->
-        Frmt.apply "WallBall {wall=%s; ball_index=%i}" (Wall.repr wall) ball_index
+      | WallBall (wall, ball_index) ->
+        Frmt.apply "WallBall (%s, %i)" (Wall.repr wall) ball_index
 
     let to_public ~date ~balls_before ~balls_after = function
-      | WallBall {wall; ball_index} ->
+      | WallBall (wall, ball_index) ->
         let before = Ball.to_public ~date balls_before.(ball_index)
         and after = Ball.to_public ~date balls_after.(ball_index) in
         Public.Event.WallBallCollision {wall; before; after}
 
     let apply ~date balls = function
-      | WallBall {wall; ball_index} ->
+      | WallBall (wall, ball_index) ->
         let balls = OCSA.copy balls in
         balls.(ball_index) <- WallBall.apply ~date wall balls.(ball_index);
         (balls, [ball_index])
@@ -187,23 +183,28 @@ module Internal = struct
     collisions_at_date: Collision.t SoSet.Poly.t;
   }
 
-  let schedule_wall_ball_collisions ~dimensions ~date ~collisions_at_date ~events ball_index ball =
-    Wall.all
-    |> Li.fold ~init:events ~f:(fun events wall ->
-      Collision.WallBall.next ~dimensions wall ball
-      |> Opt.value_map ~def:events ~f:(fun happens_at ->
-        if happens_at < date then events else
-        let collision = Collision.WallBall {wall; ball_index} in
-        if SoSet.Poly.contains collisions_at_date ~v:collision then events else
-        let event = {
-          Event.scheduled_at=date;
-          happens_at;
-          collision;
-        } in
+  let schedule_events ~events ~date ~collisions_at_date new_events =
+    new_events
+    |> Li.fold ~init:events ~f:(fun events ({Event.happens_at; collision; _} as event) ->
+      if happens_at < date || SoSet.Poly.contains collisions_at_date ~v:collision
+      then
+        events
+      else begin
         log "Scheduling %s\n" (Event.repr event);
         EventQueue.add events ~event
+      end
+    )
+
+  let schedule_wall_ball_collisions ~dimensions ~date ~collisions_at_date ~events ball_index ball =
+    Wall.all
+    |> Li.filter_map ~f:(fun wall ->
+      Collision.WallBall.next ~dimensions wall ball
+      |> Opt.map ~f:(fun happens_at ->
+        let collision = Collision.WallBall (wall, ball_index) in
+        {Event.scheduled_at=date; happens_at; collision}
       )
     )
+    |> schedule_events ~events ~date ~collisions_at_date
 
   let create ~dimensions balls =
     log "Creating\n";
@@ -236,7 +237,7 @@ module Internal = struct
     let rec aux events =
       let ({Event.scheduled_at; collision; _} as event) = EventQueue.next events in
       match collision with
-        | Collision.WallBall {ball_index; _} ->
+        | Collision.WallBall (_, ball_index) ->
           if balls.(ball_index).Ball.date > scheduled_at then begin
             log "Skipping %s\n" (Event.repr event);
             aux (EventQueue.pop_next events)

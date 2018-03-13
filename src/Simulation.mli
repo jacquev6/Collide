@@ -13,7 +13,7 @@ module Ball: sig
     radius: float;
     density: float;
     position: float * float;
-    speed: float * float;
+    velocity: float * float;
   }
 
   val repr: t -> string

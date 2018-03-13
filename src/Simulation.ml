@@ -21,13 +21,13 @@ module Public = struct
       radius: float;
       density: float;
       position: float * float;
-      speed: float * float; (* @todo Rename velocity (Speed is a scalar, velocity is a vector) *)
+      velocity: float * float;
     }
 
-    let repr {radius; density; position=(x, y); speed=(sx, sy)} =
+    let repr {radius; density; position=(x, y); velocity=(vx, vy)} =
       Frmt.apply
-        "{radius=%.2f; density=%.2f; position=(%.2f, %.2f); speed=(%.2f, %.2f)}"
-        radius density x y sx sy
+        "{radius=%.2f; density=%.2f; position=(%.2f, %.2f); velocity=(%.2f, %.2f)}"
+        radius density x y vx vy
   end
 
   module Event = struct
@@ -66,55 +66,55 @@ module Internal = struct
       density: float;
       date: float;
       position: float * float;
-      speed: float * float;
+      velocity: float * float;
     }
 
-    (* let repr {radius; density; date; position=(x, y); speed=(sx, sy)} =
+    (* let repr {radius; density; date; position=(x, y); velocity=(vx, vy)} =
       Frmt.apply
-        "{radius=%.2f; density=%.2f; date=%.2f; position=(%.2f, %.2f); speed=(%.2f, %.2f)}"
-        radius density date x y sx sy *)
+        "{radius=%.2f; density=%.2f; date=%.2f; position=(%.2f, %.2f); velocity=(%.2f, %.2f)}"
+        radius density date x y vx vy *)
 
-    let of_public ~date {Public.Ball.radius; density; position; speed} =
-      {radius; density; date; position; speed}
+    let of_public ~date {Public.Ball.radius; density; position; velocity} =
+      {radius; density; date; position; velocity}
 
-    let position ~date {date=t0; position=(x, y); speed=(sx, sy); _} =
+    let position ~date {date=t0; position=(x, y); velocity=(vx, vy); _} =
       assert (date >= t0);
       let dt = date -. t0 in
-      let x = x +. dt *. sx
-      and y = y +. dt *. sy in
+      let x = x +. dt *. vx
+      and y = y +. dt *. vy in
       (x, y)
 
-    let to_public ~date ({radius; density; speed; _} as ball) =
+    let to_public ~date ({radius; density; velocity; _} as ball) =
       let position = position ~date ball in
-      {Public.Ball.radius; density; position; speed}
+      {Public.Ball.radius; density; position; velocity}
   end
 
   module Collision = struct
     module WallBall = struct
-      let next ~dimensions:(w, h) (wall: Wall.t) {Ball.radius; density=_; date; position=(x, y); speed=(sx, sy)} =
-        let (dimension, position, speed) =
+      let next ~dimensions:(w, h) (wall: Wall.t) {Ball.radius; density=_; date; position=(x, y); velocity=(vx, vy)} =
+        let (dimension, position, velocity) =
           match wall with
-            | Left | Right -> (w, x, sx)
-            | Top | Bottom -> (h, y, sy)
+            | Left | Right -> (w, x, vx)
+            | Top | Bottom -> (h, y, vy)
         in
-        let (speed_sign, target_position) =
+        let (velocity_sign, target_position) =
           match wall with
             | Left | Top -> (-1., 0. +. radius)
             | Right | Bottom -> (1., dimension -. radius)
         in
-        Opt.some_if' (speed *. speed_sign > 0.) (date +. (target_position -. position) /. speed)
+        Opt.some_if' (velocity *. velocity_sign > 0.) (date +. (target_position -. position) /. velocity)
 
       let apply ~date (wall: Wall.t) ball =
         let position = Ball.position ~date ball
-        and speed =
-          let (sx, sy) = ball.Ball.speed in
+        and velocity =
+          let (vx, vy) = ball.Ball.velocity in
           match wall with
-            | Left -> assert (sx < 0.); (-.sx, sy)
-            | Right -> assert (sx > 0.); (-.sx, sy)
-            | Top -> assert (sy < 0.); (sx, -.sy)
-            | Bottom -> assert (sy > 0.); (sx, -.sy)
+            | Left -> assert (vx < 0.); (-.vx, vy)
+            | Right -> assert (vx > 0.); (-.vx, vy)
+            | Top -> assert (vy < 0.); (vx, -.vy)
+            | Bottom -> assert (vy > 0.); (vx, -.vy)
         in
-        {ball with date; position; speed}
+        {ball with date; position; velocity}
     end
 
     type t =

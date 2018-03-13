@@ -20,7 +20,7 @@ let () = begin
   let simulation = Simulation.(create
     ~dimensions:(640., 480.)
     Ball.[
-      {radius=40.; density=1.; position=(320., 240.); speed=(100., 90.)};
+      {radius=40.; density=1.; position=(320., 240.); velocity=(100., 90.)};
     ]
   ) in
   let images_per_second = Int.of_string OCamlStandard.Sys.argv.(1)

@@ -24,10 +24,12 @@ module Public = struct
       velocity: float * float;
     }
 
+    (*BISECT-IGNORE-BEGIN*) (* Test code *)
     let repr {radius; density; position=(x, y); velocity=(vx, vy)} =
       Frmt.apply
         "{radius=%.2f; density=%.2f; position=(%.2f, %.2f); velocity=(%.2f, %.2f)}"
         radius density x y vx vy
+    (*BISECT-IGNORE-END*)
   end
 
   module Event = struct
@@ -42,11 +44,13 @@ module Public = struct
         after: Ball.t;
       }
 
+    (*BISECT-IGNORE-BEGIN*) (* Test code *)
     let repr = function
       | BallBallCollision {before=(b1, b2); after=(a1, a2)} ->
         Frmt.apply "BallBallCollision {before=(%s, %s); after=(%s, %s)}" (Ball.repr b1) (Ball.repr b2) (Ball.repr a1) (Ball.repr a2)
       | WallBallCollision {wall; before; after} ->
         Frmt.apply "WallBallCollision {wall=%s; before=%s; after=%s}" (Wall.repr wall) (Ball.repr before) (Ball.repr after)
+    (*BISECT-IGNORE-END*)
   end
 end
 

@@ -1,4 +1,5 @@
-/_build/
+/_build
+/_builds/
 .merlin
 *.png
 *.mp4

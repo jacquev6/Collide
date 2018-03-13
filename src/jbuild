@@ -4,6 +4,7 @@
   (name Collide_)
   (modules (Drawer Simulation))
   (libraries (General JsOfOCairo))
+;  (preprocess (pps (bisect_ppx))); Uncomment for dev mode
 ))
 
 (executable (
@@ -16,10 +17,19 @@
   (name unit_test)
   (modules (unit_test))
   (libraries (Collide_))
+;  (preprocess (pps (bisect_ppx))); Uncomment for dev mode
+))
+
+(rule (
+  (targets (unit_test.sentinel))
+  (deps (unit_test.bc))
+  (action (progn
+    (run ${exe:unit_test.bc})
+    (write-file unit_test.sentinel sentinel)
+  ))
 ))
 
 (alias (
   (name runtest)
-  (deps (unit_test.bc))
-  (action (run ${exe:unit_test.bc}))
+  (deps (unit_test.sentinel))
 ))

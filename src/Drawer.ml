@@ -51,6 +51,8 @@ module Make(C: JsOfOCairo.S) = struct
 
   let draw ~context ?event simulation =
     C.save context;
+    C.set_source_rgb context ~r:1. ~g:1. ~b:1.;
+    C.paint context;
     draw_walls ~context simulation;
     C.translate context ~x:wall_width ~y:wall_width;
     draw_balls ~context simulation;

@@ -19,6 +19,7 @@ function jbuilder_flavor {
     $gen $flavor
   done
 
+  rm -f _build/default/src/*.sentinel
   jbuilder "$@"
 
   rm -rf _build
@@ -29,15 +30,21 @@ function jbuilder_flavor {
 }
 
 
-rm -f _builds/*/default/src/*.sentinel
-
-
 jbuilder_flavor coverage runtest --dev
 echo
 bisect-summary _builds/coverage/default/src/bisect????.out
 echo
 bisect-ppx-report -I _builds/coverage/default -html _builds/coverage/default/bisect _builds/coverage/default/src/bisect????.out
 echo "See coverage report in $(pwd)/_builds/coverage/default/bisect/index.html"
+echo
+
+
+jbuilder_flavor release build src/collide_in_browser.bc.js src/FileSaver.js
+cp _builds/release/default/src/collide_in_browser.bc.js docs/collide.js
+cp _builds/release/default/src/FileSaver.js docs
+echo
+echo "Have a look at $(pwd)/docs/index.html"
+echo
 
 
 jbuilder_flavor release build src/collide.exe

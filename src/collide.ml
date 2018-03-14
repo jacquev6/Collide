@@ -12,8 +12,6 @@ let draw_frame ?event format =
     let (w, h) = Drawer.measure simulation in
     let image = Cairo.Image.(create RGB24 ~width:(Int.of_float w) ~height:(Int.of_float h)) in
     let context = Cairo.create image in
-    Cairo.set_source_rgb context ~r:0.9 ~g:0.9 ~b:1.;
-    Cairo.paint context;
     Drawer.draw ~context ?event simulation;
     Cairo.PNG.write image file_name
   )

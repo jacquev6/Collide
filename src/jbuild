@@ -4,8 +4,8 @@
   (name Collide_)
   (modules (Drawer Simulation))
   (libraries (General JsOfOCairo))
-;  (preprocess (pps (bisect_ppx))); Uncomment for dev mode
 ))
+
 
 (executable (
   (name collide)
@@ -13,11 +13,11 @@
   (libraries (cairo2 Collide_))
 ))
 
+
 (executable (
   (name unit_test)
   (modules (unit_test))
   (libraries (Collide_))
-;  (preprocess (pps (bisect_ppx))); Uncomment for dev mode
 ))
 
 (rule (

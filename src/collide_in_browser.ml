@@ -27,6 +27,12 @@ module App = GraphicalApplication.Make(struct
       |> ignore
   end
 
+  module Toolbar = struct
+    let on_save_clicked f =
+      let button = get_by_id "save_button" Dom_html.CoerceTo.button in
+      button##.onclick := Dom.handler (fun _ -> f (); Js._false)
+  end
+
   module File = struct
     let (file: (Js.js_string Js.t Js.js_array Js.t -> Js.js_string Js.t -> File.file Js.t) Js.constr) =
       Js.Unsafe.global##._File

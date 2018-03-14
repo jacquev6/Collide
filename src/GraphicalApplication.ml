@@ -15,6 +15,10 @@ module Make(Frontend: sig
     val set_recurring: seconds:float -> (unit -> unit) -> unit
   end
 
+  module Toolbar: sig
+    val on_save_clicked: (unit -> unit) -> unit
+  end
+
   module File: sig
     val save: bytes -> unit
     val on_file_loaded: (bytes -> unit) -> unit
@@ -56,6 +60,10 @@ end) = struct
     Drawer.draw ~context simulation;
     Cairo.restore context
 
+  let set_simulation simulation =
+    state := {simulation};
+    draw ()
+
   let () = Frontend.GraphicalView.on_refresh_needed draw
 
   let interval = 1. /. 25.
@@ -69,9 +77,27 @@ end) = struct
         | None -> simulation
         | Some _ -> aux simulation
     in
-    let simulation = aux simulation in
-    state := {simulation};
-    draw ()
+    set_simulation (aux simulation)
 
   let () = Frontend.Timer.set_recurring ~seconds:interval advance
+
+  let save () =
+    let {simulation} = !state in
+    simulation
+    |> JsonSimulation.to_json
+    |> Yojson.Basic.pretty_to_string
+    |> By.of_string
+    |> Frontend.File.save
+
+  let () = Frontend.Toolbar.on_save_clicked save
+
+  let file_loaded bs =
+    set_simulation (
+      bs
+      |> By.to_string
+      |> Yojson.Basic.from_string
+      |> JsonSimulation.of_json
+    )
+
+  let () = Frontend.File.on_file_loaded file_loaded
 end

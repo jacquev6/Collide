@@ -7,8 +7,8 @@ template = """\
 
 (library (
   (name Collide_)
-  (modules (Drawer Simulation GraphicalApplication))
-  (libraries (General JsOfOCairo)){coverage}
+  (modules (Drawer Simulation JsonSimulation GraphicalApplication))
+  (libraries (yojson General JsOfOCairo)){coverage}
 ))
 
 

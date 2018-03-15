@@ -6,7 +6,7 @@ module Make(Frontend: sig
   module Cairo: JsOfOCairo.S
 
   module GraphicalView: sig
-    val context: unit -> Cairo.context
+    val with_context: (Cairo.context -> unit) -> unit
     val size: unit -> int * int
     val on_refresh_needed: (unit -> unit) -> unit
   end
@@ -54,11 +54,12 @@ end) = struct
     ref {simulation}
 
   let draw () =
-    let {simulation} = !state in
-    let context = Frontend.GraphicalView.context () in
-    Cairo.save context;
-    Drawer.draw ~context simulation;
-    Cairo.restore context
+    Frontend.GraphicalView.with_context (fun context ->
+      let {simulation} = !state in
+      Cairo.save context;
+      Drawer.draw ~context simulation;
+      Cairo.restore context
+    )
 
   let set_simulation simulation =
     state := {simulation};

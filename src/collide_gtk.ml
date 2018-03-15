@@ -1,8 +1,6 @@
 open General.Abbr
 open Collide
 
-let () = StdOut.print "This will soon be a GTK+ application\n"
-
 let _ = GMain.init ()
 
 let window = GWindow.window ~title:"SimOptics" ~width:640 ~height:480 ()
@@ -24,12 +22,25 @@ module App = GraphicalApplication.Make(struct
   module Cairo = Cairo
 
   module GraphicalView = struct
-    let context () =
-      Cairo_gtk.create graphical_view#misc#window
-
     let size () =
       let {Gtk.width; height; _} = graphical_view#misc#allocation in
-      (width, height)
+      (width - 1, height - 1)
+      (* Without the "- 1" above, we get the following error in the expose event:
+        > The program 'collide_gtk.exe' received an X Window System error.
+        > This probably reflects a bug in the program.
+        > The error was 'BadDrawable (invalid Pixmap or Window parameter)'.
+        > (Details: serial 1009 error_code 9 request_code 62 minor_code 0)
+      I have no idea why but I don't want to spend time investigating right now :-/ *)
+
+    let with_context f =
+      let (width, height) = size () in
+      let image = Cairo.Image.(create RGB24 ~width ~height) in
+      let context = Cairo.create image in
+      f context;
+      let context = Cairo_gtk.create graphical_view#misc#window in
+      let pattern = Cairo.Pattern.create_for_surface image in
+      Cairo.set_source context pattern;
+      Cairo.paint context
 
     let on_refresh_needed f =
       graphical_view#event#connect#expose ~callback:(fun _ -> f (); true)

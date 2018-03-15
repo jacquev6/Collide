@@ -10,8 +10,8 @@ module App = GraphicalApplication.Make(struct
   module GraphicalView = struct
     let graphical_view = get_by_id "graphical_view" Dom_html.CoerceTo.canvas
 
-    let context () =
-      JsOfOCairo.create graphical_view
+    let with_context f =
+      f (JsOfOCairo.create graphical_view)
 
     let size () =
       (640, 480)

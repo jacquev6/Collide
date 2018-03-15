@@ -1,5 +1,5 @@
 open General.Abbr
-open Collide_
+open Collide
 
 let get_by_id id coerce =
   Js.Opt.get (coerce (Dom_html.getElementById id)) (fun () -> Exn.(raise NotFound))

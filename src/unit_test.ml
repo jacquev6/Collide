@@ -1,6 +1,6 @@
 open General.Abbr
 open Tst
-open Collide_
+open Collide
 
 module T = struct
   let test = "Collide" >:: [

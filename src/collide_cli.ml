@@ -1,5 +1,5 @@
 open General.Abbr
-open Collide_
+open Collide
 
 module OCSR = OCamlStandard.Random
 

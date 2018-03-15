@@ -271,7 +271,6 @@ module Internal = struct
       then
         events
       else begin
-        log "Scheduling %s\n" (Event.repr event);
         EventQueue.add events ~event
       end
     )
@@ -299,7 +298,6 @@ module Internal = struct
     |> schedule_events ~events ~date ~collisions_at_date
 
   let create ~dimensions balls =
-    log "Creating\n";
     let date = 0.
     and collisions_at_date = SoSet.Poly.empty in
     let balls_list = Li.map ~f:(Ball.of_public ~date) balls in
@@ -325,7 +323,7 @@ module Internal = struct
 
   let skip_canceled_events ~balls events =
     let rec aux events =
-      let ({Event.scheduled_at; collision; _} as event) = EventQueue.next events in
+      let {Event.scheduled_at; collision; _} = EventQueue.next events in
       let skip =
         match collision with
           | Collision.WallBall (_, ball_index) ->
@@ -335,7 +333,6 @@ module Internal = struct
             || balls.(ball_index_2).Ball.date > scheduled_at
       in
       if skip then begin
-        log "Skipping %s\n" (Event.repr event);
         aux (EventQueue.pop_next events)
       end else
         events

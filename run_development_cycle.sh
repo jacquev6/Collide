@@ -51,6 +51,12 @@ echo "Try the in-browser application: $(pwd)/docs/index.html"
 echo
 
 
+jbuilder_flavor release build src/collide_gtk.exe
+echo
+echo "Try the GTK+ application: $(pwd)/_builds/release/default/src/collide_gtk.exe"
+echo
+
+
 jbuilder_flavor release build src/collide_cli.exe
 rm -f *.png
 RATE=25

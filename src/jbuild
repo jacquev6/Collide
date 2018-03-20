@@ -27,7 +27,7 @@
 (rule (
   (targets (node_modules.sentinel))
   (action (progn
-    (run ${bin:npm} install "file-saver@>=1.3.3 <2" "browserify")
+    (run ${bin:npm} install "file-saver@1.3.3")
     (write-file node_modules.sentinel sentinel)
   ))
 ))
@@ -36,7 +36,7 @@
   (targets (FileSaver.js))
   (deps (node_modules.sentinel))
   (action (progn
-    (with-stdout-to ${@} (system "node_modules/.bin/browserify -s FileSaver node_modules/file-saver/FileSaver.min.js"))
+    (with-stdout-to ${@} (run ${bin:browserify} -s FileSaver node_modules/file-saver/FileSaver.min.js))
   ))
 ))
 

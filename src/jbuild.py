@@ -41,7 +41,7 @@ template = """\
   (targets (FileSaver.js))
   (deps (node_modules.sentinel))
   (action (progn
-    (with-stdout-to ${{@}} (system "node_modules/.bin/browserify -s FileSaver node_modules/file-saver/FileSaver.min.js"))
+    (with-stdout-to ${{@}} (run ${{bin:browserify}} -s FileSaver node_modules/file-saver/FileSaver.min.js))
   ))
 ))
 
@@ -81,13 +81,12 @@ template = """\
 """
 
 npm_packages = [
-    "file-saver@>=1.3.3 <2",
-    "browserify",
+    "file-saver@1.3.3",
 ]
 
 coverage = dict(
     coverage="\n  (preprocess (pps (bisect_ppx)))",
-    npm_install="(system \"if [ -d /tmp/node_modules_for_Collide ]; then rm -rf node_modules; cp -R /tmp/node_modules_for_Collide node_modules; else npm install {}; rm -rf /tmp/node_modules_for_Collide; cp -R node_modules /tmp/node_modules_for_Collide; fi\")".format(" ".join("'{}'".format(pack) for pack in npm_packages)),
+    npm_install="(system \"if [ -d /tmp/node_modules_for_Collide ]; then echo Restoring cached npm_modules; rm -rf node_modules; cp -R /tmp/node_modules_for_Collide node_modules; else npm install {}; rm -rf /tmp/node_modules_for_Collide; cp -R node_modules /tmp/node_modules_for_Collide; fi\")".format(" ".join("'{}'".format(pack) for pack in npm_packages)),
 )
 
 release = dict(

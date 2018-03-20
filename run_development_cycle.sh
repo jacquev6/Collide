@@ -39,17 +39,19 @@ echo "See coverage report in $(pwd)/_builds/coverage/default/bisect/index.html"
 echo
 
 
-jbuilder_flavor release build @collide_browser
-rm -rf docs
-mkdir docs
-touch docs/.nojekyll
-sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html > docs/index.html
-cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
-cp _builds/release/default/src/FileSaver.js docs
-echo
-echo "Try the in-browser application: $(pwd)/docs/index.html"
-echo
-
+if which browserify >/dev/null
+then
+  jbuilder_flavor release build @collide_browser
+  rm -rf docs
+  mkdir docs
+  touch docs/.nojekyll
+  sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html > docs/index.html
+  cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
+  cp _builds/release/default/src/FileSaver.js docs
+  echo
+  echo "Try the in-browser application: $(pwd)/docs/index.html"
+  echo
+fi
 
 jbuilder_flavor release build src/collide_gtk.exe
 echo

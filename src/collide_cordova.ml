@@ -14,7 +14,7 @@ module App = GraphicalApplication.Make(struct
       f (JsOfOCairo.create graphical_view)
 
     let size () =
-      (200, 200)
+      (graphical_view##.width, graphical_view##.height)
 
     let on_refresh_needed f =
       (* No refresh event on HTML canvas; just draw it now *)

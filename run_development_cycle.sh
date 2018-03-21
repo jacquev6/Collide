@@ -78,12 +78,20 @@ then
   cd _builds/cordova
   cordova build >build.stdout 2>build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/build.stdout and $PROJECT_ROOT/_builds/cordova/build.stderr"; false)
   cd $PROJECT_ROOT
+  echo
+  echo "Try the Cordova browser application: $PROJECT_ROOT/_builds/cordova/platforms/browser/www/index.html"
+  echo
+  if [ $(adb devices -l | grep -c model:) == 1 ]
+  then
+    adb install -r -t $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+    adb shell monkey -p net.jacquev6.Collide 1
+    echo
+    echo "Try the Cordova Android application: on your connected phone"
+  else
+    echo
+    echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
+  fi
 fi
-echo
-echo "Try the Cordova Android application: $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
-echo
-echo "Try the Cordova browser application: $PROJECT_ROOT/_builds/cordova/platforms/browser/www/index.html"
-echo
 
 
 jbuilder_flavor release build src/collide_cli.exe

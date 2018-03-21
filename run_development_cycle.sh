@@ -66,15 +66,16 @@ if which cordova >/dev/null
 then
   if ! [ -d _builds/cordova ]
   then
-    cordova create _builds/cordova --name net.jacquev6.Collide
+    cordova create _builds/cordova net.jacquev6.Collide Collide
     cd _builds/cordova
     cordova platform add android
     cordova platform add browser
   fi
   cd $PROJECT_ROOT
-  jbuilder_flavor release build src/collide_cordova.bc.js
-  cp _builds/release/default/src/collide_cordova.bc.js _builds/cordova/www/js/collide.js
-  cp src/collide_cordova.html _builds/cordova/www/index.html
+  jbuilder_flavor release build @collide_cordova
+  cp _builds/release/default/src/collide_cordova.bc.js _builds/cordova/www/js/index.js
+  cp _builds/release/default/src/collide_cordova.css _builds/cordova/www/css/index.css
+  cp _builds/release/default/src/collide_cordova.html _builds/cordova/www/index.html
   cd _builds/cordova
   cordova build >build.stdout 2>build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/build.stdout and $PROJECT_ROOT/_builds/cordova/build.stderr"; false)
   cd $PROJECT_ROOT
@@ -88,9 +89,9 @@ then
     echo
     echo "Try the Cordova Android application: on your connected phone"
   else
-    echo
     echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
   fi
+  echo
 fi
 
 

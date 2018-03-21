@@ -67,6 +67,11 @@ template = """\
   (js_of_ocaml ((flags (+nat.js))))
 ))
 
+(alias (
+  (name collide_cordova)
+  (deps (collide_cordova.html collide_cordova.bc.js collide_cordova.css))
+))
+
 
 (executable (
   (name unit_test)

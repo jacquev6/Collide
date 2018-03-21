@@ -4,11 +4,17 @@ open Collide
 let get_by_id id coerce =
   Js.Opt.get (coerce (Dom_html.getElementById id)) (fun () -> Exn.(raise NotFound))
 
+
 module App = GraphicalApplication.Make(struct
   module Cairo = JsOfOCairo
 
   module GraphicalView = struct
     let graphical_view = get_by_id "graphical_view" Dom_html.CoerceTo.canvas
+
+    let () = begin
+      graphical_view##.height := Js.Optdef.get Dom_html.window##.innerHeight (fun () -> 160);
+      graphical_view##.width := Js.Optdef.get Dom_html.window##.innerWidth (fun () -> 120)
+    end
 
     let with_context f =
       f (JsOfOCairo.create graphical_view)

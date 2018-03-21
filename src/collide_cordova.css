@@ -3,16 +3,6 @@
   padding: 0;
 }
 
-body, html {
-  height: 100%;
-}
-
 canvas {
-  display: block;
-}
-
-#graphical_view {
   position: absolute;
-  width: 100%;
-  height: 100%;
 }

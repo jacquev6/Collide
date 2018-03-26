@@ -21,6 +21,16 @@ let () = window#show ()
 module App = GraphicalApplication.Make(struct
   module Cairo = Cairo
 
+  let make_callback name f ret =
+    fun _ ->
+      begin
+        try
+          f ()
+        with
+          ex -> StdErr.print "Exception in %s: %s\n" name (Exn.to_string ex)
+      end;
+      ret
+
   module GraphicalView = struct
     let size () =
       let {Gtk.width; height; _} = graphical_view#misc#allocation in
@@ -43,23 +53,23 @@ module App = GraphicalApplication.Make(struct
       Cairo.paint context
 
     let on_refresh_needed f =
-      graphical_view#event#connect#expose ~callback:(fun _ -> f (); true)
+      graphical_view#event#connect#expose ~callback:(make_callback "graphical_view.expose" f true)
       |> ignore
 
     let on_resized f =
-      graphical_view#event#connect#configure ~callback:(fun _ -> f (); true)
+      graphical_view#event#connect#configure ~callback:(make_callback "graphical_view.configure" f true)
       |> ignore
   end
 
   module Timer = struct
     let set_recurring ~seconds f =
-      Glib.Timeout.add ~ms:(Int.of_float (1000. *. seconds)) ~callback:(fun _ -> f (); true)
+      Glib.Timeout.add ~ms:(Int.of_float (1000. *. seconds)) ~callback:(make_callback "timer.timeout" f true)
       |> ignore
   end
 
   module Toolbar = struct
     let on_save_clicked f =
-      save_button#connect#clicked ~callback:(fun _ -> f ())
+      save_button#connect#clicked ~callback:(make_callback "save_button.clicked" f ())
       |> ignore
   end
 

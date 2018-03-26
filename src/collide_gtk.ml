@@ -3,7 +3,7 @@ open Collide
 
 let _ = GMain.init ()
 
-let window = GWindow.window ~title:"SimOptics" ()
+let window = GWindow.window ~title:"Collide" ()
 
 let _  = window#connect#destroy ~callback:GMain.quit
 

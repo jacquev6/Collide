@@ -53,10 +53,7 @@ then
   rm -rf docs
   mkdir docs
   touch docs/.nojekyll
-  cat _builds/release/default/src/collide_browser.html \
-  | grep -v "cordova\.js" \
-  | sed "s|collide_browser.bc.js|collide.js|" \
-  > docs/index.html
+  sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html | grep -v "cordova\.js" >docs/index.html
   cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
   cp _builds/release/default/src/FileSaver.js docs
   echo
@@ -75,9 +72,7 @@ then
     fi
     cd $PROJECT_ROOT
     jbuilder_flavor release build @collide_browser
-    cat _builds/release/default/src/collide_browser.html \
-    | sed "s|collide_browser.bc.js|collide.js|" \
-    > _builds/cordova/www/index.html
+    sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html >_builds/cordova/www/index.html
     cp _builds/release/default/src/collide_browser.bc.js _builds/cordova/www/collide.js
     cp _builds/release/default/src/FileSaver.js _builds/cordova/www
     cd _builds/cordova

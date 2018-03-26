@@ -37,6 +37,11 @@ module App = GraphicalApplication.Make(struct
     let on_save_clicked f =
       let button = get_by_id "save_button" Dom_html.CoerceTo.button in
       button##.onclick := Dom.handler (fun _ -> f (); Js._false)
+
+    let _ = Js.Unsafe.eval_string {|
+      jQuery("#toolbar").modal();
+      jQuery("#graphical_view").on("click", function(){jQuery("#toolbar").modal()});
+    |}
   end
 
   module File = struct

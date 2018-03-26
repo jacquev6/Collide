@@ -11,8 +11,8 @@ template = """\
 
 (library (
   (name Collide)
-  (modules (Drawer Simulation JsonSimulation GraphicalApplication))
-  (libraries (yojson General JsOfOCairo)){coverage}
+  (modules (Drawer Simulation GraphicalApplication))
+  (libraries (General JsOfOCairo)){coverage}
 ))
 
 

@@ -15,15 +15,6 @@ module Make(Frontend: sig
   module Timer: sig
     val set_recurring: seconds:float -> (unit -> unit) -> unit
   end
-
-  module Toolbar: sig
-    val on_save_clicked: (unit -> unit) -> unit
-  end
-
-  module File: sig
-    val save: bytes -> unit
-    val on_file_loaded: (bytes -> unit) -> unit
-  end
 end) = struct
   module Cairo = Frontend.Cairo
   module Drawer = Drawer.Make(Cairo)
@@ -91,24 +82,4 @@ end) = struct
     set_simulation (aux simulation)
 
   let () = Frontend.Timer.set_recurring ~seconds:interval advance
-
-  let save () =
-    let {simulation} = !state in
-    simulation
-    |> JsonSimulation.to_json
-    |> Yojson.Basic.pretty_to_string
-    |> By.of_string
-    |> Frontend.File.save
-
-  let () = Frontend.Toolbar.on_save_clicked save
-
-  let file_loaded bs =
-    set_simulation (
-      bs
-      |> By.to_string
-      |> Yojson.Basic.from_string
-      |> JsonSimulation.of_json
-    )
-
-  let () = Frontend.File.on_file_loaded file_loaded
 end

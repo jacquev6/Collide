@@ -73,7 +73,7 @@ then
   fi
   cd $PROJECT_ROOT
   jbuilder_flavor release build @collide_cordova
-  cp _builds/release/default/src/collide_cordova.bc.js _builds/cordova/www/js/index.js
+  cp _builds/release/default/src/collide_browser.bc.js _builds/cordova/www/js/index.js
   cp _builds/release/default/src/collide_cordova.css _builds/cordova/www/css/index.css
   cp _builds/release/default/src/collide_cordova.html _builds/cordova/www/index.html
   cd _builds/cordova

@@ -3,7 +3,7 @@ open Collide
 
 let _ = GMain.init ()
 
-let window = GWindow.window ~title:"SimOptics" ~width:640 ~height:480 ()
+let window = GWindow.window ~title:"SimOptics" ()
 
 let _  = window#connect#destroy ~callback:GMain.quit
 
@@ -14,7 +14,7 @@ let buttons = GPack.hbox ~packing:(vbox#pack ~expand:false) ()
 let save_button = GButton.button ~label:"Save" ~packing:(buttons#pack ~expand:false) ()
 let load_button = GButton.button ~label:"Load" ~packing:(buttons#pack ~expand:false) ()
 
-let graphical_view = GMisc.drawing_area ~packing:vbox#add ()
+let graphical_view = GMisc.drawing_area ~packing:vbox#add ~width:320 ~height:240 ()
 
 let () = window#show ()
 
@@ -44,6 +44,10 @@ module App = GraphicalApplication.Make(struct
 
     let on_refresh_needed f =
       graphical_view#event#connect#expose ~callback:(fun _ -> f (); true)
+      |> ignore
+
+    let on_resized f =
+      graphical_view#event#connect#configure ~callback:(fun _ -> f (); true)
       |> ignore
   end
 

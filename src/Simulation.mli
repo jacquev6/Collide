@@ -23,6 +23,8 @@ type t
 
 val create: dimensions:float * float -> Ball.t list -> t
 
+val resize: t -> dimensions:float * float -> t
+
 module Event: sig
   type t =
     | BallBallCollision of {

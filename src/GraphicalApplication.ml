@@ -9,6 +9,7 @@ module Make(Frontend: sig
     val with_context: (Cairo.context -> unit) -> unit
     val size: unit -> int * int
     val on_refresh_needed: (unit -> unit) -> unit
+    val on_resized: (unit -> unit) -> unit
   end
 
   module Timer: sig
@@ -31,26 +32,28 @@ end) = struct
     simulation: Simulation.t;
   }
 
-  let state =
+  let (get_dimensions: unit -> float * float) = fun () ->
     let (w, h) = Frontend.GraphicalView.size () in
-    let w = Fl.of_int w -. 2. *. Drawer.wall_width
-    and h = Fl.of_int h -. 2. *. Drawer.wall_width in
-    let simulation = Simulation.(create
-      ~dimensions:(w, h)
+    (Fl.of_int w -. 2. *. Drawer.wall_width, Fl.of_int h -. 2. *. Drawer.wall_width)
+
+  let state =
+    let dimensions = get_dimensions () in
+    let simulation = Simulation.create
+      ~dimensions
       (
         IntRa.make 10
         |> IntRa.ToList.map ~f:(fun _ ->
           let rd a b = a +. OCSR.float (b -. a) in
           let radius = rd 3. 15. in
-          Ball.{
+          Simulation.Ball.{
             radius;
             density=(rd 0.1 1.);
-            position=((rd radius (w -. radius)), (rd radius (h -. radius)));
+            position=(let (w, h) = dimensions in ((rd radius (w -. radius)), (rd radius (h -. radius))));
             velocity=(let v_max = 100. in ((rd (-.v_max) v_max), (rd (-.v_max) v_max)));
           };
         )
       )
-    ) in
+    in
     ref {simulation}
 
   let draw () =
@@ -66,6 +69,13 @@ end) = struct
     draw ()
 
   let () = Frontend.GraphicalView.on_refresh_needed draw
+
+  let resize () =
+    let {simulation} = !state in
+    let dimensions = get_dimensions () in
+    set_simulation (Simulation.resize ~dimensions simulation)
+
+  let () = Frontend.GraphicalView.on_resized resize
 
   let interval = 1. /. 25.
 

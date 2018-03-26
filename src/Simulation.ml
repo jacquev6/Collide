@@ -55,8 +55,11 @@ module Public = struct
 end
 
 module Internal = struct
+  (* let log format =
+    StdOut.print ~flush:true format *)
+
   let log format =
-    StdOut.print ~flush:true format
+    Frmt.with_result ~f:ignore format
 
   module Wall = struct
     include Public.Wall
@@ -300,8 +303,15 @@ module Internal = struct
   let create ~dimensions balls =
     let date = 0.
     and collisions_at_date = SoSet.Poly.empty in
-    let balls_list = Li.map ~f:(Ball.of_public ~date) balls in
-    let balls = Li.to_array balls_list in
+    let balls =
+      balls
+      |> Li.map ~f:(let (w, h) = dimensions in
+        fun ({Public.Ball.radius; position=(x, y); _} as ball) ->
+          let x = Fl.min (w -. radius) x and y = Fl.min (h -. radius) y in
+          Ball.of_public ~date {ball with position=(x, y)}
+      )
+      |> Li.to_array
+    in
     let events =
       IntRa.make (Ar.size balls)
       |> IntRa.fold ~init:EventQueue.empty ~f:(fun events ball_index ->
@@ -320,6 +330,9 @@ module Internal = struct
     balls
     |> Li.of_array
     |> Li.map ~f:(Ball.to_public ~date)
+
+  let resize s ~dimensions =
+    create ~dimensions (balls s)
 
   let skip_canceled_events ~balls events =
     let rec aux events =
@@ -371,6 +384,7 @@ include Public
 type t = Internal.t
 
 let create = Internal.create
+let resize = Internal.resize
 let dimensions = Internal.dimensions
 let date = Internal.date
 let balls = Internal.balls

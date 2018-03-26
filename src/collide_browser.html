@@ -29,24 +29,54 @@
         cursor: inherit;
         display: block;
     }
+
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      position: absolute;
+    }
   </style>
 </head>
 <body>
-  <div class="container-fluid">
-    <h1>Collide</h1>
+    <!--<h1>Collide</h1>
     <p>
       <button id="save_button" class="btn btn-primary">Save</button>
       <span class="btn btn-primary btn-file">Load<input id="load_input" type="file"></span>
-    </p>
-    <p><canvas style="border: 1px solid black" class="img-fluid" id="graphical_view" width="640" height="480"></canvas></p>
+    </p>-->
+  <canvas id="graphical_view"></canvas>
+
+  <div class="modal" id="toolbar" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title">Collide</h1>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <button id="save_button" class="btn btn-primary">Save</button>
+            <span class="btn btn-primary btn-file">Load<input id="load_input" type="file"></span>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-  <script>var jacquev6_ribbon_github="Collide";</script>
-  <script src="https://jacquev6.github.io/ribbon.js"></script>
+  <!-- @todo Add ribbons to the modal #toolbar <script>var jacquev6_ribbon_github="Collide";</script>
+  <script src="https://jacquev6.github.io/ribbon.js"></script>-->
   <script src="FileSaver.js"></script>
   <script src="collide_browser.bc.js"></script>
+  <script>
+    $(function() {
+      $("#toolbar").modal();
+      $("#graphical_view").on("click", function(){$("#toolbar").modal()});
+    })
+  </script>
 </body>
 </html>

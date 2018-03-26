@@ -1,5 +1,7 @@
 open General.Abbr
+
 module OCSA = OCamlStandard.ArrayLabels
+module OCSR = OCamlStandard.Random
 
 module Public = struct
   module Wall = struct
@@ -397,3 +399,20 @@ let dimensions = Internal.dimensions
 let date = Internal.date
 let balls = Internal.balls
 let advance = Internal.advance
+
+let randomize ~dimensions ~balls ~max_speed ~min_radius ~max_radius ~min_density ~max_density =
+  create
+  ~dimensions
+  (
+    IntRa.make balls
+    |> IntRa.ToList.map ~f:(fun _ ->
+      let rd a b = a +. OCSR.float (b -. a) in
+      let radius = rd min_radius max_radius in
+      Ball.{
+        radius;
+        density=(rd min_density max_density);
+        position=(let (w, h) = dimensions in ((rd radius (w -. radius)), (rd radius (h -. radius))));
+        velocity=(let v_max = max_speed /. Fl.sqrt 2. in ((rd (-.v_max) v_max), (rd (-.v_max) v_max)));
+      };
+    )
+  )

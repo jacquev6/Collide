@@ -1,7 +1,5 @@
 open General.Abbr
 
-module OCSR = OCamlStandard.Random
-
 module Make(Frontend: sig
   module Cairo: JsOfOCairo.S
 
@@ -23,28 +21,13 @@ end) = struct
     simulation: Simulation.t;
   }
 
-  let (get_dimensions: unit -> float * float) = fun () ->
+  let get_dimensions () =
     let (w, h) = Frontend.GraphicalView.size () in
-    (Fl.of_int w -. 2. *. Drawer.wall_width, Fl.of_int h -. 2. *. Drawer.wall_width)
+    (Fl.of_int w, Fl.of_int h)
 
   let state =
     let dimensions = get_dimensions () in
-    let simulation = Simulation.create
-      ~dimensions
-      (
-        IntRa.make 10
-        |> IntRa.ToList.map ~f:(fun _ ->
-          let rd a b = a +. OCSR.float (b -. a) in
-          let radius = rd 3. 15. in
-          Simulation.Ball.{
-            radius;
-            density=(rd 0.1 1.);
-            position=(let (w, h) = dimensions in ((rd radius (w -. radius)), (rd radius (h -. radius))));
-            velocity=(let v_max = 100. in ((rd (-.v_max) v_max), (rd (-.v_max) v_max)));
-          };
-        )
-      )
-    in
+    let simulation = Simulation.randomize ~dimensions ~balls:10 ~max_speed:100. ~min_radius:3. ~max_radius:10. ~min_density:0.1 ~max_density:1. in
     ref {simulation}
 
   let draw () =

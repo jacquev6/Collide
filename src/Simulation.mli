@@ -23,6 +23,8 @@ type t
 
 val create: dimensions:float * float -> Ball.t list -> t
 
+val randomize: dimensions:float * float -> balls:int -> max_speed:float -> min_radius:float -> max_radius:float -> min_density:float -> max_density:float -> t
+
 val resize: t -> dimensions:float * float -> t
 
 module Event: sig

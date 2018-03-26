@@ -1,15 +1,13 @@
 open General.Abbr
 open Collide
 
-module OCSR = OCamlStandard.Random
-
 let () = Exn.record_backtraces true
 
 module Drawer = Drawer.Make(Cairo)
 
 let draw_frame ?event format =
   Frmt.with_result format ~f:(fun file_name simulation ->
-    let (w, h) = Drawer.measure simulation in
+    let (w, h) = Simulation.dimensions simulation in
     let image = Cairo.Image.(create RGB24 ~width:(Int.of_float w) ~height:(Int.of_float h)) in
     let context = Cairo.create image in
     Drawer.draw ~context ?event simulation;
@@ -17,25 +15,7 @@ let draw_frame ?event format =
   )
 
 let () = begin
-  let () = OCSR.init 42 in
-  let simulation = Simulation.(
-    let w = 640. and h = 480. in
-    create
-    ~dimensions:(w, h)
-    (
-      IntRa.make 30
-      |> IntRa.ToList.map ~f:(fun _ ->
-        let rd a b = a +. OCSR.float (b -. a) in
-        let radius = rd 3. 15. in
-        Ball.{
-          radius;
-          density=(rd 0.1 1.);
-          position=((rd radius (w -. radius)), (rd radius (h -. radius)));
-          velocity=(let v_max = 100. in ((rd (-.v_max) v_max), (rd (-.v_max) v_max)));
-        };
-      )
-    )
-  ) in
+  let simulation = Simulation.randomize ~dimensions:(640., 480.) ~balls:30 ~max_speed:100. ~min_radius:3. ~max_radius:15. ~min_density:0.1 ~max_density:1. in
   let images_per_second = Int.of_string OCamlStandard.Sys.argv.(1)
   and duration = Int.of_string OCamlStandard.Sys.argv.(2) in
   let frames = duration * images_per_second + 1 in

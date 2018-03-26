@@ -53,11 +53,6 @@
   (deps (collide_browser.html collide_browser.bc.js FileSaver.js))
 ))
 
-(alias (
-  (name collide_cordova)
-  (deps (collide_cordova.html collide_browser.bc.js FileSaver.js))
-))
-
 
 (executable (
   (name unit_test)

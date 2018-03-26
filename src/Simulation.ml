@@ -55,8 +55,10 @@ module Public = struct
 end
 
 module Internal = struct
-  (* let log format =
-    StdOut.print ~flush:true format *)
+  (*
+  let log format =
+    StdOut.print ~flush:true format
+  *)
 
   let log format =
     Frmt.with_result ~f:ignore format
@@ -267,18 +269,20 @@ module Internal = struct
     collisions_at_date: Collision.t SoSet.Poly.t;
   }
 
-  let schedule_events ~events ~date ~collisions_at_date new_events =
+  let schedule_events ~events ~date new_events =
     new_events
-    |> Li.fold ~init:events ~f:(fun events ({Event.happens_at; collision; _} as event) ->
-      if happens_at < date || SoSet.Poly.contains collisions_at_date ~v:collision
-      then
+    |> Li.fold ~init:events ~f:(fun events ({Event.happens_at; _} as event) ->
+      if happens_at < date
+      then begin
+        log "NOT scheduling %s\n" (Event.repr event);
         events
-      else begin
+      end else begin
+        log "Scheduling %s\n" (Event.repr event);
         EventQueue.add events ~event
       end
     )
 
-  let schedule_collisions ~start ~dimensions ~date ~collisions_at_date ~events ~balls ball_index =
+  let schedule_collisions ~start ~dimensions ~date ~events ~balls ball_index =
     let events =
       Wall.all
       |> Li.filter_map ~f:(fun wall ->
@@ -288,7 +292,7 @@ module Internal = struct
           {Event.scheduled_at=date; happens_at; collision}
         )
       )
-      |> schedule_events ~events ~date ~collisions_at_date
+      |> schedule_events ~events ~date
     in
     IntRa.make ~start (Ar.size balls)
     |> IntRa.ToList.filter_map ~f:(fun ball_index_2 ->
@@ -298,7 +302,7 @@ module Internal = struct
           {Event.scheduled_at=date; happens_at; collision}
       )
     )
-    |> schedule_events ~events ~date ~collisions_at_date
+    |> schedule_events ~events ~date
 
   let create ~dimensions balls =
     let date = 0.
@@ -315,7 +319,7 @@ module Internal = struct
     let events =
       IntRa.make (Ar.size balls)
       |> IntRa.fold ~init:EventQueue.empty ~f:(fun events ball_index ->
-        schedule_collisions ~start:ball_index ~dimensions ~date ~collisions_at_date ~events ~balls ball_index
+        schedule_collisions ~start:ball_index ~dimensions ~date ~events ~balls ball_index
       )
     in
     {dimensions; date; balls; events; collisions_at_date}
@@ -334,18 +338,22 @@ module Internal = struct
   let resize s ~dimensions =
     create ~dimensions (balls s)
 
-  let skip_canceled_events ~balls events =
+  let skip_canceled_events ~balls ~collisions_at_date events =
     let rec aux events =
-      let {Event.scheduled_at; collision; _} = EventQueue.next events in
+      let ({Event.scheduled_at; collision; _} as event) = EventQueue.next events in
       let skip =
-        match collision with
-          | Collision.WallBall (_, ball_index) ->
-            balls.(ball_index).Ball.date > scheduled_at
-          | Collision.BallBall (ball_index_1, ball_index_2) ->
-            balls.(ball_index_1).Ball.date > scheduled_at
-            || balls.(ball_index_2).Ball.date > scheduled_at
+        SoSet.Poly.contains collisions_at_date ~v:collision
+        || (
+          match collision with
+            | Collision.WallBall (_, ball_index) ->
+              balls.(ball_index).Ball.date > scheduled_at
+            | Collision.BallBall (ball_index_1, ball_index_2) ->
+              balls.(ball_index_1).Ball.date > scheduled_at
+              || balls.(ball_index_2).Ball.date > scheduled_at
+        )
       in
       if skip then begin
+        log "Skiping %s\n" (Event.repr event);
         aux (EventQueue.pop_next events)
       end else
         events
@@ -354,7 +362,7 @@ module Internal = struct
 
   let advance ({dimensions; date; events; balls; collisions_at_date} as simulation) ~max_date =
     log "Advancing to %.2f\n" max_date;
-    let events = skip_canceled_events ~balls events in
+    let events = skip_canceled_events ~balls ~collisions_at_date events in
     let ({Event.happens_at; collision; _} as event) = EventQueue.next events in
     if happens_at < max_date then begin
       let collisions_at_date =
@@ -371,7 +379,7 @@ module Internal = struct
       let events =
         impacted_ball_indexes
         |> Li.fold ~init:events ~f:(fun events ball_index ->
-          schedule_collisions ~start:0 ~collisions_at_date ~dimensions ~date ~events ~balls:balls_after ball_index
+          schedule_collisions ~start:0 ~dimensions ~date ~events ~balls:balls_after ball_index
         )
       in
       (Some event, {simulation with date; balls=balls_after; events; collisions_at_date})

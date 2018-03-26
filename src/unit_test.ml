@@ -85,6 +85,36 @@ module T = struct
               });
             ]
             {Ball.radius=10.; density=1.; position=(200., 289.); velocity=(0., -1.)};
+          make "start to bottom-right" 2.
+            {Ball.radius=10.; density=1.; position=(389., 289.); velocity=(1., 1.)}
+            [
+              (1., WallBallCollision {
+                wall=Right;
+                before={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(1., 1.)};
+                after={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(-1., 1.)}
+              });
+              (1., WallBallCollision {
+                wall=Bottom;
+                before={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(-1., 1.)};
+                after={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(-1., -1.)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(389., 289.); velocity=(-1., -1.)};
+          make "start at bottom-right" 1.
+            {Ball.radius=10.; density=1.; position=(390., 290.); velocity=(1., 1.)}
+            [
+              (0., WallBallCollision {
+                wall=Right;
+                before={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(1., 1.)};
+                after={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(-1., 1.)}
+              });
+              (0., WallBallCollision {
+                wall=Bottom;
+                before={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(-1., 1.)};
+                after={Ball.radius=10.; density=1.; position=(390., 290.); velocity=(-1., -1.)}
+              });
+            ]
+            {Ball.radius=10.; density=1.; position=(389., 289.); velocity=(-1., -1.)};
           make "hit left wall" 2.
             {Ball.radius=10.; density=1.; position=(11., 60.); velocity=(-1., 2.)}
             [

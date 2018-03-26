@@ -41,57 +41,56 @@ echo "See coverage report in $PROJECT_ROOT/_builds/coverage/default/bisect/index
 echo
 
 
-if which browserify >/dev/null
-then
-  jbuilder_flavor release build @collide_browser
-  rm -rf docs
-  mkdir docs
-  touch docs/.nojekyll
-  sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html > docs/index.html
-  cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
-  cp _builds/release/default/src/FileSaver.js docs
-  echo
-  echo "Try the in-browser application: $PROJECT_ROOT/docs/index.html"
-  echo
-fi
-
-
 jbuilder_flavor release build src/collide_gtk.exe
 echo
 echo "Try the GTK+ application: $PROJECT_ROOT/_builds/release/default/src/collide_gtk.exe"
 echo
 
 
-if which cordova >/dev/null
+if which browserify >/dev/null
 then
-  if ! [ -d _builds/cordova ]
+  jbuilder_flavor release build @collide_browser
+  rm -rf docs
+  mkdir docs
+  touch docs/.nojekyll
+  sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html | grep -v "cordova\.js" >docs/index.html
+  cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
+  cp _builds/release/default/src/FileSaver.js docs
+  echo
+  echo "Try the in-browser application: $PROJECT_ROOT/docs/index.html"
+  echo
+
+  if which cordova >/dev/null
   then
-    cordova create _builds/cordova net.jacquev6.Collide Collide
+    if ! [ -d _builds/cordova ]
+    then
+      cordova create _builds/cordova net.jacquev6.Collide Collide
+      cd _builds/cordova
+      cordova platform add android
+      cordova platform add browser
+      rm www/js/index.js www/css/index.css
+    fi
+    cd $PROJECT_ROOT
+    sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html >_builds/cordova/www/index.html
+    cp _builds/release/default/src/collide_browser.bc.js _builds/cordova/www/collide.js
+    cp _builds/release/default/src/FileSaver.js _builds/cordova/www
     cd _builds/cordova
-    cordova platform add android
-    cordova platform add browser
-  fi
-  cd $PROJECT_ROOT
-  jbuilder_flavor release build @collide_cordova
-  cp _builds/release/default/src/collide_cordova.bc.js _builds/cordova/www/js/index.js
-  cp _builds/release/default/src/collide_cordova.css _builds/cordova/www/css/index.css
-  cp _builds/release/default/src/collide_cordova.html _builds/cordova/www/index.html
-  cd _builds/cordova
-  cordova build >build.stdout 2>build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/build.stdout and $PROJECT_ROOT/_builds/cordova/build.stderr"; false)
-  cd $PROJECT_ROOT
-  echo
-  echo "Try the Cordova browser application: $PROJECT_ROOT/_builds/cordova/platforms/browser/www/index.html"
-  echo
-  if [ $(adb devices -l | grep -c model:) == 1 ]
-  then
-    adb install -r -t $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
-    adb shell monkey -p net.jacquev6.Collide 1
+    cordova build >build.stdout 2>build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/build.stdout and $PROJECT_ROOT/_builds/cordova/build.stderr"; false)
+    cd $PROJECT_ROOT
     echo
-    echo "Try the Cordova Android application: on your connected phone"
-  else
-    echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
+    echo "Try the Cordova browser application: $PROJECT_ROOT/_builds/cordova/platforms/browser/www/index.html"
+    echo
+    if [ $(adb devices -l | grep -c model:) == 1 ]
+    then
+      adb install -r -t $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      adb shell monkey -p net.jacquev6.Collide 1
+      echo
+      echo "Try the Cordova Android application: on your connected phone"
+    else
+      echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
+    fi
+    echo
   fi
-  echo
 fi
 
 

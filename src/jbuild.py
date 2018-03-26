@@ -61,20 +61,6 @@ template = """\
 
 
 (executable (
-  (name collide_cordova)
-  (modules (collide_cordova))
-  (libraries (Collide))
-  (preprocess (pps (js_of_ocaml-ppx)))
-  (js_of_ocaml ((flags (+nat.js))))
-))
-
-(alias (
-  (name collide_cordova)
-  (deps (collide_cordova.html collide_cordova.bc.js collide_cordova.css))
-))
-
-
-(executable (
   (name unit_test)
   (modules (unit_test))
   (libraries (Collide)){coverage}

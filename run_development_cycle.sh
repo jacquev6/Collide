@@ -86,6 +86,7 @@ then
       adb shell monkey -p net.jacquev6.Collide 1
       echo
       echo "Try the Cordova Android application: on your connected phone"
+      echo "Use 'adb logcat | grep chromium' to see OCaml's StdOut and JavaScript's console.log"
     else
       echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
     fi

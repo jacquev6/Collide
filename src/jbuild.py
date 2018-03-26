@@ -61,7 +61,7 @@ template = """\
 
 (alias (
   (name collide_cordova)
-  (deps (collide_cordova.html collide_browser.bc.js collide_cordova.css))
+  (deps (collide_cordova.html collide_browser.bc.js FileSaver.js))
 ))
 
 

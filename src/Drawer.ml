@@ -17,7 +17,14 @@ module Make(C: JsOfOCairo.S) = struct
     if draw_velocity then begin
       C.set_source_rgb context ~r:1. ~g:0. ~b:0.;
       C.move_to context ~x ~y;
-      C.rel_line_to context ~x:(vx /. 10.) ~y:(vy /. 10.);
+      C.rel_line_to context ~x:vx ~y:vy;
+      C.save context;
+      C.translate context ~x:(x +. vx) ~y:(y +. vy);
+      C.rotate context ~angle:(Fl.atan2 ~x:vx ~y:vy);
+      C.move_to context ~x:(-10.) ~y:(-10.);
+      C.line_to context ~x:0. ~y:0.;
+      C.line_to context ~x:(-10.) ~y:10.;
+      C.restore context;
       C.stroke context;
     end;
     C.restore context

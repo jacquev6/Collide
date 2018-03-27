@@ -31,7 +31,7 @@ module App = GraphicalApplication.Make(struct
       Dom_html.window##.onresize := Dom.handler (fun _ ->
         resize_canvas ();
         f ();
-        Js._false
+        Js._true
       )
   end
 

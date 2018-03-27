@@ -53,7 +53,14 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
-          <input type="checkbox" id="draw_velocity_checkbox" /><label for="draw_velocity_checkbox">&nbsp;Draw velocity vectors</label>
+          <h2>Options</h2>
+          <p><input type="checkbox" id="draw_velocity_checkbox" /><label for="draw_velocity_checkbox">&nbsp;Draw velocity vectors</label></p>
+          <h2>Randomize</h2>
+          <p><label for="randomize_balls">Balls:&nbsp;</label><input type="text" id="randomize_balls" value="10" size="8"/></p>
+          <p><label for="randomize_max_speed">Max speed:&nbsp;</label><input type="text" id="randomize_max_speed" value="100" size="8"/></p>
+          <p><label for="randomize_min_radius">Radius: between&nbsp;</label><input type="text" id="randomize_min_radius" value="3" size="3"/><label for="randomize_max_radius">&nbsp;and&nbsp;</label><input type="text" id="randomize_max_radius" value="15" size="3"/></p>
+          <p><label for="randomize_min_density">Density: between&nbsp;</label><input type="text" id="randomize_min_density" value="0.1" size="3"/><label for="randomize_max_density">&nbsp;and&nbsp;</label><input type="text" id="randomize_max_density" value="1" size="3"/></p>
+          <p><button id="randomize_button" class="btn btn-primary">Randomize</button></p>
           <!-- jacquev6_ribbons duplicated from jacquev6.github.io
           @todo Modify jacquev6_ribbons to handle the case where ribbons must be added into a specific container -->
           <div id="jacquev6_ribbons"><div><p><a href="https://github.com/jacquev6/Collide">Fork me on GitHub</a></p><p><a href="http://vincent-jacques.net/">More projects by jacquev6</a></p></div></div>

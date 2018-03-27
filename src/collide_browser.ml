@@ -51,6 +51,25 @@ module App = GraphicalApplication.Make(struct
         Js._true
       )
 
+    let on_randomize f =
+      let randomize_button = get_by_id "randomize_button" Dom_html.CoerceTo.button
+      and randomize_balls = get_by_id "randomize_balls" Dom_html.CoerceTo.input
+      and randomize_max_speed = get_by_id "randomize_max_speed" Dom_html.CoerceTo.input
+      and randomize_min_radius = get_by_id "randomize_min_radius" Dom_html.CoerceTo.input
+      and randomize_max_radius = get_by_id "randomize_max_radius" Dom_html.CoerceTo.input
+      and randomize_min_density = get_by_id "randomize_min_density" Dom_html.CoerceTo.input
+      and randomize_max_density = get_by_id "randomize_max_density" Dom_html.CoerceTo.input in
+      randomize_button##.onclick := Dom.handler (fun _ ->
+        let balls = randomize_balls##.value |> Js.to_string |> Int.of_string
+        and max_speed = randomize_max_speed##.value |> Js.to_string |> Fl.of_string
+        and min_radius = randomize_min_radius##.value |> Js.to_string |> Fl.of_string
+        and max_radius = randomize_max_radius##.value |> Js.to_string |> Fl.of_string
+        and min_density = randomize_min_density##.value |> Js.to_string |> Fl.of_string
+        and max_density = randomize_max_density##.value |> Js.to_string |> Fl.of_string in
+        f ~balls ~max_speed ~min_radius ~max_radius ~min_density ~max_density;
+        Js._true
+      )
+
     let _ = Js.Unsafe.eval_string {|
       jQuery("#toolbar").modal();
       jQuery("#graphical_view").on("click", function(){jQuery("#toolbar").modal()});

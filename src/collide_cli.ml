@@ -1,29 +1,77 @@
 open General.Abbr
 open Collide
 
-let () = Exn.record_backtraces true
+module OCSS = OCamlStandard.Scanf
+module OCSA = OCamlStandard.Arg
+
+let width = ref 640
+and height = ref 480
+and balls = ref 30
+and max_speed = ref 100.
+and min_radius = ref 3.
+and max_radius = ref 15.
+and min_density = ref 0.1
+and max_density = ref 1.
+and fps = ref 25
+and duration = ref 30
+and filename_format = ref None
+and draw_velocity = ref false
+
+let speclist =
+  OCSA.[
+    ("--width", Set_int width, "width");
+    ("--height", Set_int height, "height");
+    ("--balls", Set_int balls, "balls");
+    ("--max-speed", Set_float max_speed, "max speed");
+    ("--min-radius", Set_float min_radius, "min radius");
+    ("--max-radius", Set_float max_radius, "max radius");
+    ("--min-density", Set_float min_density, "min density");
+    ("--max-density", Set_float max_density, "max density");
+    ("--fps", Set_int fps, "fps");
+    ("--duration", Set_int duration, "duration");
+    ("--draw-velocity", Set draw_velocity, "draw velocity vectors");
+  ]
+
+let () = OCSA.parse speclist (fun format -> Exn.failure_unless (Opt.is_none !filename_format) "filename_format must be specified exactly once"; filename_format := Some format) "Usage: collide_cli [options] filename_format\n\nfilename_format is a Printf format for a single integer (like \"%08d.png\")\n\nOptions:"
 
 module Drawer = Drawer.Make(Cairo)
 
 let settings = {
-  Drawer.Settings.draw_velocity = false;
+  Drawer.Settings.draw_velocity = !draw_velocity;
 }
 
-let width = 640
-and height = 480
+let width = !width
+and height = !height
+and balls = !balls
+and max_speed = !max_speed
+and min_radius = !min_radius
+and max_radius = !max_radius
+and min_density = !min_density
+and max_density = !max_density
+and fps = !fps
+and duration = !duration
+and filename_format = OCSS.format_from_string (Opt.value !filename_format ~exc:(Exn.Failure "filename_format must be specified exactly once")) "%d"
+
+let () = begin
+  Exn.failure_unless (0 < width) "--width must be greater than 0 (got %i)" width;
+  Exn.failure_unless (0 < height) "--height must be greater than 0 (got %i)" height;
+  Exn.failure_unless (0 < balls) "--balls must be greater than 0 (got %i)" balls;
+  Exn.failure_unless (0. < min_radius) "--min-radius must be greater than 0. (got %g)" min_radius;
+  Exn.failure_unless (min_radius <= max_radius) "--max-radius must be greater or equal to --min_radius. (got %g and %g)" max_radius min_radius;
+  Exn.failure_unless (0. < min_density) "--min-density must be greater than 0. (got %g)" min_density;
+  Exn.failure_unless (min_density <= max_density) "--max-density must be greater or equal to --min_density. (got %g and %g)" max_density min_density;
+  Exn.failure_unless (max_density <= 1.) "--max-density must be less than or equal to 1. (got %g)" max_density;
+end
+
+let frames = duration * fps
+
+let _ = StdOut.print ~flush:true "Generating %i frames (%is at %ifps), named %s, with %i balls (radius: %g to %g, density: %g to %g, speed: 0 to %g)\n" frames duration fps (Frmt.to_string filename_format) balls min_radius max_radius min_density max_density max_speed
 
 let simulation = Simulation.randomize
   ~dimensions:(Fl.of_int width, Fl.of_int height)
-  ~balls:30 ~max_speed:100.
-  ~min_radius:3. ~max_radius:15.
-  ~min_density:0.1 ~max_density:1.
-
-let images_per_second = Int.of_string OCamlStandard.Sys.argv.(1)
-and duration = Int.of_string OCamlStandard.Sys.argv.(2)
-
-let frames = duration * images_per_second + 1
-
-let () = assert (frames <= 99999999) (* Because we need zero-padded filenames for ffmpeg and use %08d below. *)
+  ~balls ~max_speed
+  ~min_radius ~max_radius
+  ~min_density ~max_density
 
 let _ =
   IntRa.make frames
@@ -31,8 +79,8 @@ let _ =
     let image = Cairo.Image.(create RGB24 ~width ~height) in
     let context = Cairo.create image in
     Drawer.draw ~context ~settings simulation;
-    Cairo.PNG.write image (Frmt.apply "%08d.png" i);
-    let date = Fl.of_int i /. Fl.of_int images_per_second in
+    Cairo.PNG.write image (Frmt.apply filename_format i);
+    let date = Fl.of_int i /. Fl.of_int fps in
     Simulation.advance simulation ~date
     |> Tu2.get_1
   )

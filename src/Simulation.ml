@@ -86,6 +86,8 @@ module Internal = struct
         radius density date x y vx vy *)
 
     let of_public ~date {Public.Ball.radius; density; position; velocity} =
+      assert (0. < density);
+      assert (density <= 1.);
       {radius; density; date; position; velocity}
 
     let position ~date {date=t0; position=(x, y); velocity=(vx, vy); _} =

@@ -367,22 +367,22 @@ module T = struct
               {Ball.radius=10.; density=1.; position=(41., 100.); velocity=(0., 0.)}
               {Ball.radius=100.; density=0.01; position=(152., 100.); velocity=(1., 0.)};
             make "frontal horizontal collision of different balls of different mass" 2.
-              {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
-              {Ball.radius=10.; density=9.; position=(61., 100.); velocity=(0., 0.)}
+              {Ball.radius=10.; density=0.1; position=(40., 100.); velocity=(1., 0.)}
+              {Ball.radius=10.; density=0.9; position=(61., 100.); velocity=(0., 0.)}
               [
                 (1., BallBallCollision {
                   before=(
-                    {radius=10.; density=1.; position=(41., 100.); velocity=(1., 0.)},
-                    {radius=10.; density=9.; position=(61., 100.); velocity=(0., 0.)}
+                    {radius=10.; density=0.1; position=(41., 100.); velocity=(1., 0.)},
+                    {radius=10.; density=0.9; position=(61., 100.); velocity=(0., 0.)}
                   );
                   after=(
-                    {radius=10.; density=1.; position=(41., 100.); velocity=(-0.80, 0.)},
-                    {radius=10.; density=9.; position=(61., 100.); velocity=(0.20, 0.)}
+                    {radius=10.; density=0.1; position=(41., 100.); velocity=(-0.80, 0.)},
+                    {radius=10.; density=0.9; position=(61., 100.); velocity=(0.20, 0.)}
                   );
                 });
               ]
-              {Ball.radius=10.; density=1.; position=(40.20, 100.); velocity=(-0.80, 0.)}
-              {Ball.radius=10.; density=9.; position=(61.20, 100.); velocity=(0.20, 0.)};
+              {Ball.radius=10.; density=0.1; position=(40.20, 100.); velocity=(-0.80, 0.)}
+              {Ball.radius=10.; density=0.9; position=(61.20, 100.); velocity=(0.20, 0.)};
           ]
         );
       ]

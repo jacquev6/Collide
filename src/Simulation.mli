@@ -48,4 +48,4 @@ val date: t -> float
 
 val balls: t -> Ball.t list
 
-val advance: t -> max_date:float -> Event.t option * t
+val advance: t -> date:float -> (float * Event.t) list * t

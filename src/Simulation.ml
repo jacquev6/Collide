@@ -398,7 +398,15 @@ let resize = Internal.resize
 let dimensions = Internal.dimensions
 let date = Internal.date
 let balls = Internal.balls
-let advance = Internal.advance
+
+let advance simulation ~date =
+  let rec aux events simulation =
+    let (event, simulation) = Internal.advance simulation ~max_date:date in
+    match event with
+      | None -> (Li.reverse events, simulation)
+      | Some event -> aux ((Internal.date simulation, event)::events) simulation
+  in
+  aux [] simulation
 
 let randomize ~dimensions ~balls ~max_speed ~min_radius ~max_radius ~min_density ~max_density =
   create

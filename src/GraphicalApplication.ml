@@ -65,14 +65,8 @@ end) = struct
 
   let advance () =
     let {simulation; _} = !state in
-    let max_date = Simulation.date simulation +. interval in
-    let rec aux simulation =
-      let (event, simulation) = Simulation.advance simulation ~max_date in
-      match event with
-        | None -> simulation
-        | Some _ -> aux simulation
-    in
-    set_simulation (aux simulation)
+    let date = Simulation.date simulation +. interval in
+    set_simulation (Simulation.advance ~date simulation |> Tu2.get_1)
 
   let () = Frontend.Timer.set_recurring ~seconds:interval advance
 

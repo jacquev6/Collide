@@ -27,25 +27,10 @@ module Make(C: JsOfOCairo.S) = struct
     |> Simulation.balls
     |> Li.iter ~f:(draw_ball ~context ~settings)
 
-  let draw_event ~context ~settings:_ = function
-    | Simulation.Event.BallBallCollision _ ->
-      (* @todo Implement *)
-      ()
-    | Simulation.Event.WallBallCollision {wall=_; before={Simulation.Ball.velocity=(vx, vy); _}; after={Simulation.Ball.position=(x, y); _}} -> begin
-      C.save context;
-      C.set_line_width context 1.;
-      C.move_to context ~x ~y;
-      C.set_source_rgb context ~r:1. ~g:0. ~b:0.;
-      C.rel_line_to context ~x:(vx /. 10.) ~y:(vy /. 10.);
-      C.stroke context;
-      C.restore context
-    end
-
-  let draw ~context ~settings ?event simulation =
+  let draw ~context ~settings simulation =
     C.save context;
     C.set_source_rgb context ~r:1. ~g:1. ~b:1.;
     C.paint context;
     draw_balls ~context ~settings simulation;
-    Opt.iter ~f:(draw_event ~context ~settings) event;
     C.restore context
 end

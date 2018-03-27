@@ -4,27 +4,25 @@ open Collide
 
 module T = struct
   let test = "Collide" >:: [
-    "Simulation" >:: Simulation.[
-      "Single-ball" >:: (
-        let make name max_date initial_ball expected_events expected_ball =
-          name >: (lazy (
-            let simulation = create ~dimensions:(400., 300.) [initial_ball] in
-            let simulation =
-              expected_events
-              |> Li.fold ~init:simulation ~f:(fun simulation (expected_date, expected_event) ->
-                let (actual_event, simulation) = advance ~max_date simulation in
-                check_some_poly ~repr:Event.repr ~expected:expected_event actual_event;
-                check_float ~expected:expected_date (date simulation);
-                simulation
-              )
-            in
-            let (actual_event, simulation) = advance ~max_date simulation in
-            check_none_poly ~repr:Event.repr actual_event;
-            check_float ~expected:max_date (date simulation);
-            check_list_poly ~repr:Ball.repr ~expected:[expected_ball] (balls simulation)
-          ))
-        in
-        [
+    "Simulation" >:: Simulation.(
+      let make name max_date initial_balls expected_events expected_balls =
+        name >: (lazy (
+          let initial_simulation = create ~dimensions:(400., 300.) initial_balls in
+          let (actual_events, final_simulation) = advance ~date:max_date initial_simulation in
+          check_float ~expected:max_date (date final_simulation);
+          check_list_poly ~repr:Ball.repr ~expected:expected_balls (balls final_simulation);
+          let repr (date, event) =
+            Frmt.apply "(%f, %s)" date (Event.repr event) (*BISECT-IGNORE*)
+          in
+          check_list_poly ~repr ~expected:expected_events actual_events
+        ))
+      in
+      [
+        "Single-ball" >:: (
+          let make name max_date initial_ball expected_events expected_ball =
+            make name max_date [initial_ball] expected_events [expected_ball]
+          in
+          [
           make "advance" 2.
             {Ball.radius=10.; density=1.; position=(40., 60.); velocity=(1., 2.)}
             []
@@ -275,28 +273,13 @@ module T = struct
               });
             ]
             {Ball.radius=10.; density=1.; position=(48., 38.); velocity=(38., 28.)};
-        ]
-      );
-      "Dual-ball" >:: (
-        let make name max_date initial_ball_1 initial_ball_2 expected_events expected_ball_1 expected_ball_2 =
-          name >: (lazy (
-            let simulation = create ~dimensions:(400., 300.) [initial_ball_1; initial_ball_2] in
-            let simulation =
-              expected_events
-              |> Li.fold ~init:simulation ~f:(fun simulation (expected_date, expected_event) ->
-                let (actual_event, simulation) = advance ~max_date simulation in
-                check_some_poly ~repr:Event.repr ~expected:expected_event actual_event;
-                check_float ~expected:expected_date (date simulation);
-                simulation
-              )
-            in
-            let (actual_event, simulation) = advance ~max_date simulation in
-            check_none_poly ~repr:Event.repr actual_event;
-            check_float ~expected:max_date (date simulation);
-            check_list_poly ~repr:Ball.repr ~expected:[expected_ball_1; expected_ball_2] (balls simulation)
-          ))
-        in
-        [
+          ]
+        );
+        "Dual-ball" >:: (
+          let make name max_date initial_ball_1 initial_ball_2 expected_events expected_ball_1 expected_ball_2 =
+            make name max_date [initial_ball_1; initial_ball_2] expected_events [expected_ball_1; expected_ball_2]
+          in
+          [
           make "no collision of balls going in same direction" 2.
             {Ball.radius=10.; density=1.; position=(40., 100.); velocity=(1., 0.)}
             {Ball.radius=10.; density=1.; position=(61., 100.); velocity=(1., 0.)}
@@ -400,9 +383,10 @@ module T = struct
             ]
             {Ball.radius=10.; density=1.; position=(40.20, 100.); velocity=(-0.80, 0.)}
             {Ball.radius=10.; density=9.; position=(61.20, 100.); velocity=(0.20, 0.)};
-        ]
-      );
-    ];
+          ]
+        );
+      ]
+    );
   ]
 end
 

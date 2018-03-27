@@ -56,36 +56,36 @@ then
   sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html | grep -v "cordova\.js" >docs/index.html
   cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
   cp _builds/release/default/src/FileSaver.js docs
+  cp icon.png docs
   echo
   echo "Try the in-browser application: $PROJECT_ROOT/docs/index.html"
   echo
 
-  if which cordova >/dev/null
+  if (which cordova && which cordova-icon) >/dev/null
   then
     if ! [ -d _builds/cordova ]
     then
       cordova create _builds/cordova net.jacquev6.Collide Collide
       cd _builds/cordova
       cordova platform add android
-      cordova platform add browser
-      rm www/js/index.js www/css/index.css
+      rm -r www/js www/css www/img
     fi
     cd $PROJECT_ROOT
     sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html >_builds/cordova/www/index.html
     cp _builds/release/default/src/collide_browser.bc.js _builds/cordova/www/collide.js
     cp _builds/release/default/src/FileSaver.js _builds/cordova/www
+    cp icon.png _builds/cordova
     cd _builds/cordova
-    cordova build >build.stdout 2>build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/build.stdout and $PROJECT_ROOT/_builds/cordova/build.stderr"; false)
+    cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr
+    cordova build >cordova-build.stdout 2>cordova-build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-build.stdout and $PROJECT_ROOT/_builds/cordova/cordova-build.stderr"; false)
     cd $PROJECT_ROOT
-    echo
-    echo "Try the Cordova browser application: $PROJECT_ROOT/_builds/cordova/platforms/browser/www/index.html"
     echo
     if [ $(adb devices -l | grep -c model:) == 1 ]
     then
-      adb install -r -t $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      adb install -r -t _builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
       adb shell monkey -p net.jacquev6.Collide 1
       echo
-      echo "Try the Cordova Android application: on your connected phone"
+      echo "Try the Cordova Android application: on your connected device"
       echo "Use 'adb logcat | grep chromium' to see OCaml's StdOut and JavaScript's console.log"
     else
       echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"

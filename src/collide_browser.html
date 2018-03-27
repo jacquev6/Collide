@@ -21,6 +21,7 @@
   <meta name="msapplication-tap-highlight" content="no">
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="https://jacquev6.github.io/ribbon.css">
   <style type="text/css">
     * {
       margin: 0;
@@ -29,6 +30,13 @@
 
     canvas {
       position: absolute;
+    }
+
+    /* @todo Include in the change to jacquev6_ribbons described below */
+    @media screen and (min-width: 992px) {
+      .modal-body {
+        min-height: 200px;
+      }
     }
   </style>
 </head>
@@ -44,6 +52,9 @@
         </div>
         <div class="modal-body">
           <input type="checkbox" id="draw_velocity_checkbox" /><label for="draw_velocity_checkbox">&nbsp;Draw velocity vectors</label>
+          <!-- jacquev6_ribbons duplicated from jacquev6.github.io
+          @todo Modify jacquev6_ribbons to handle the case where ribbons must be added into a specific container -->
+          <div id="jacquev6_ribbons"><div><p><a href="https://github.com/jacquev6/Collide">Fork me on GitHub</a></p><p><a href="http://vincent-jacques.net/">More projects by jacquev6</a></p></div></div>
         </div>
       </div>
     </div>
@@ -53,8 +64,6 @@
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-  <!-- @todo Add ribbons to the modal #toolbar <script>var jacquev6_ribbon_github="Collide";</script>
-  <script src="https://jacquev6.github.io/ribbon.js"></script>-->
   <script src="FileSaver.js"></script>
   <script src="collide_browser.bc.js"></script>
 </body>

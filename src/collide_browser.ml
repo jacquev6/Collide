@@ -42,6 +42,15 @@ module App = GraphicalApplication.Make(struct
   end
 
   module Toolbar = struct
+    let on_draw_velocity_set f =
+      let checkbox = get_by_id "draw_velocity_checkbox" Dom_html.CoerceTo.input in
+      checkbox##.onchange := Dom.handler (fun _ ->
+        checkbox##.checked
+        |> Js.to_bool
+        |> f;
+        Js._true
+      )
+
     let _ = Js.Unsafe.eval_string {|
       jQuery("#toolbar").modal();
       jQuery("#graphical_view").on("click", function(){jQuery("#toolbar").modal()});

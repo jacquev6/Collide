@@ -5,12 +5,16 @@ let () = Exn.record_backtraces true
 
 module Drawer = Drawer.Make(Cairo)
 
+let settings = {
+  Drawer.Settings.draw_velocity = false;
+}
+
 let draw_frame ?event format =
   Frmt.with_result format ~f:(fun file_name simulation ->
     let (w, h) = Simulation.dimensions simulation in
     let image = Cairo.Image.(create RGB24 ~width:(Int.of_float w) ~height:(Int.of_float h)) in
     let context = Cairo.create image in
-    Drawer.draw ~context ?event simulation;
+    Drawer.draw ~context ~settings ?event simulation;
     Cairo.PNG.write image file_name
   )
 

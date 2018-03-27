@@ -9,7 +9,9 @@ let _  = window#connect#destroy ~callback:GMain.quit
 
 let vbox = GPack.vbox ~packing:window#add ()
 
-(* let buttons = GPack.hbox ~packing:(vbox#pack ~expand:false) () *)
+let buttons = GPack.hbox ~packing:(vbox#pack ~expand:false) ()
+
+let draw_velocity_checkbox = GButton.check_button ~label:"Draw velocity vectors" ~packing:(buttons#pack ~expand:false) ()
 
 let graphical_view = GMisc.drawing_area ~packing:vbox#add ~width:320 ~height:240 ()
 
@@ -61,6 +63,12 @@ module App = GraphicalApplication.Make(struct
   module Timer = struct
     let set_recurring ~seconds f =
       Glib.Timeout.add ~ms:(Int.of_float (1000. *. seconds)) ~callback:(make_callback "timer.timeout" f true)
+      |> ignore
+  end
+
+  module Toolbar = struct
+    let on_draw_velocity_set f =
+      draw_velocity_checkbox#connect#toggled ~callback:(make_callback "draw_velocity_checkbox.toggled" (fun () -> f draw_velocity_checkbox#active) ())
       |> ignore
   end
 end)

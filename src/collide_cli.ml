@@ -34,12 +34,6 @@ let speclist =
 
 let () = OCSA.parse speclist (fun format -> Exn.failure_unless (Opt.is_none !filename_format) "filename_format must be specified exactly once"; filename_format := Some format) "Usage: collide_cli [options] filename_format\n\nfilename_format is a Printf format for a single integer (like \"%08d.png\")\n\nOptions:"
 
-module Drawer = Drawer.Make(Cairo)
-
-let settings = {
-  Drawer.Settings.draw_velocity = !draw_velocity;
-}
-
 let width = !width
 and height = !height
 and balls = !balls
@@ -51,6 +45,7 @@ and max_density = !max_density
 and fps = !fps
 and duration = !duration
 and filename_format = OCSS.format_from_string (Opt.value !filename_format ~exc:(Exn.Failure "filename_format must be specified exactly once")) "%d"
+and draw_velocity = !draw_velocity
 
 let () = begin
   Exn.failure_unless (0 < width) "--width must be greater than 0 (got %i)" width;
@@ -73,12 +68,16 @@ let simulation = Simulation.randomize
   ~min_radius ~max_radius
   ~min_density ~max_density
 
+module Drawer = Drawer.Make(Cairo)
+
 let _ =
   IntRa.make frames
   |> IntRa.fold ~init:simulation ~f:(fun simulation i ->
     let image = Cairo.Image.(create RGB24 ~width ~height) in
     let context = Cairo.create image in
-    Drawer.draw ~context ~settings simulation;
+    Cairo.set_source_rgb context ~r:1. ~g:1. ~b:1.;
+    Cairo.paint context;
+    Drawer.draw ~context ~draw_velocity simulation;
     Cairo.PNG.write image (Frmt.apply filename_format i);
     let date = Fl.of_int i /. Fl.of_int fps in
     Simulation.advance simulation ~date

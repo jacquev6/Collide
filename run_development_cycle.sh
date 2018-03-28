@@ -50,12 +50,13 @@ echo
 if which browserify >/dev/null
 then
   jbuilder_flavor release build @collide_browser
+
   rm -rf docs
   mkdir docs
   touch docs/.nojekyll
-  sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html | grep -v "cordova\.js" >docs/index.html
-  cp _builds/release/default/src/collide_browser.bc.js docs/collide.js
-  cp _builds/release/default/src/FileSaver.js docs
+  grep -v "cordova\.js" _builds/release/default/src/collide_browser.html >docs/index.html
+  cp _builds/release/default/src/*.css docs
+  cp _builds/release/default/src/*.js docs
   cp icon.png docs
   echo
   echo "Try the in-browser application: $PROJECT_ROOT/docs/index.html"
@@ -71,9 +72,9 @@ then
       rm -r www/js www/css www/img
     fi
     cd $PROJECT_ROOT
-    sed "s|collide_browser.bc.js|collide.js|" _builds/release/default/src/collide_browser.html >_builds/cordova/www/index.html
-    cp _builds/release/default/src/collide_browser.bc.js _builds/cordova/www/collide.js
-    cp _builds/release/default/src/FileSaver.js _builds/cordova/www
+    cp _builds/release/default/src/collide_browser.html _builds/cordova/www/index.html
+    cp _builds/release/default/src/*.css _builds/cordova/www
+    cp _builds/release/default/src/*.js _builds/cordova/www
     cp icon.png _builds/cordova
     cd _builds/cordova
     cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr || (echo "Error during cordova-icon. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-icon.stdout and $PROJECT_ROOT/_builds/cordova/cordova-icon.stderr"; false)

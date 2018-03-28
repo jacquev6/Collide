@@ -48,9 +48,29 @@
   (js_of_ocaml ((flags (+nat.js))))
 ))
 
+(rule (
+  (targets (bootstrap.min.css))
+  (action (run ${bin:wget} https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css))
+))
+
+(rule (
+  (targets (bootstrap.min.js))
+  (action (run ${bin:wget} https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js))
+))
+
+(rule (
+  (targets (popper.min.js))
+  (action (run ${bin:wget} https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js))
+))
+
+(rule (
+  (targets (jquery-3.2.1.slim.min.js))
+  (action (run ${bin:wget} https://code.jquery.com/jquery-3.2.1.slim.min.js))
+))
+
 (alias (
   (name collide_browser)
-  (deps (collide_browser.html collide_browser.bc.js FileSaver.js))
+  (deps (collide_browser.html bootstrap.min.css bootstrap.min.js popper.min.js jquery-3.2.1.slim.min.js FileSaver.js collide_browser.bc.js))
 ))
 
 

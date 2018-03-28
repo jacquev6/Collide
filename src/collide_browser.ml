@@ -71,8 +71,14 @@ module App = GraphicalApplication.Make(struct
       )
 
     let _ = Js.Unsafe.eval_string {|
-      jQuery("#toolbar").modal();
-      jQuery("#graphical_view").on("click", function(){jQuery("#toolbar").modal()});
+      jQuery("#toolbar").modal("show");
+      jQuery("#graphical_view").on("click", function() {
+        jQuery("#toolbar").modal("show");
+      });
+      jQuery("#show_randomize_dialog_button").on("click", function() {
+        jQuery("#toolbar").modal("hide");
+        jQuery("#randomize_dialog").modal("show");
+      })
     |}
   end
 end)

@@ -12,7 +12,7 @@ let vbox = GPack.vbox ~packing:window#add ()
 let buttons = GPack.hbox ~packing:(vbox#pack ~expand:false) ()
 
 let packing = buttons#pack ~expand:false
-let draw_velocity_checkbox = GButton.check_button ~label:"Draw velocity vectors" ~packing ()
+let draw_velocity_checkbox = GButton.check_button ~label:"Display velocity vectors" ~packing ()
 (* @todo Put these controls in a dialog, open it with a "Randomize..." button and randomize on "OK" *)
 let _ = GMisc.label ~text:"Balls: " ~packing ()
 let randomize_balls = GEdit.entry ~text:"10" ~width_chars:3 ~packing ()

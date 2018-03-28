@@ -4,6 +4,7 @@ open Collide
 
 module T = struct
   let test = "Collide" >:: [
+    Ring.Test.test;
     "Simulation" >:: Simulation.(
       let make name max_date initial_balls expected_events expected_balls =
         name >: (lazy (

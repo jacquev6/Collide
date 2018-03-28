@@ -12,7 +12,8 @@ let vbox = GPack.vbox ~packing:window#add ()
 let buttons = GPack.hbox ~packing:(vbox#pack ~expand:false) ()
 
 let packing = buttons#pack ~expand:false
-let draw_velocity_checkbox = GButton.check_button ~label:"Display velocity vectors" ~packing ()
+let display_velocity_vectors_checkbox = GButton.check_button ~label:"Display velocity vectors" ~packing ()
+let display_previous_positions_checkbox = GButton.check_button ~label:"Display previous positions" ~packing ()
 (* @todo Put these controls in a dialog, open it with a "Randomize..." button and randomize on "OK" *)
 let _ = GMisc.label ~text:"Balls: " ~packing ()
 let randomize_balls = GEdit.entry ~text:"10" ~width_chars:3 ~packing ()
@@ -82,8 +83,12 @@ module App = GraphicalApplication.Make(struct
   end
 
   module Toolbar = struct
-    let on_draw_velocity_set f =
-      draw_velocity_checkbox#connect#toggled ~callback:(make_callback "draw_velocity_checkbox.toggled" (fun () -> f draw_velocity_checkbox#active) ())
+    let on_display_velocity_vectors_set f =
+      display_velocity_vectors_checkbox#connect#toggled ~callback:(make_callback "display_velocity_vectors_checkbox.toggled" (fun () -> f display_velocity_vectors_checkbox#active) ())
+      |> ignore
+
+    let on_display_previous_positions_set f =
+      display_previous_positions_checkbox#connect#toggled ~callback:(make_callback "display_previous_positions_checkbox.toggled" (fun () -> f display_previous_positions_checkbox#active) ())
       |> ignore
 
     let on_randomize f =

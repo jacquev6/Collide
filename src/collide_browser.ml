@@ -42,8 +42,17 @@ module App = GraphicalApplication.Make(struct
   end
 
   module Toolbar = struct
-    let on_draw_velocity_set f =
-      let checkbox = get_by_id "draw_velocity_checkbox" Dom_html.CoerceTo.input in
+    let on_display_velocity_vectors_set f =
+      let checkbox = get_by_id "display_velocity_vectors_checkbox" Dom_html.CoerceTo.input in
+      checkbox##.onchange := Dom.handler (fun _ ->
+        checkbox##.checked
+        |> Js.to_bool
+        |> f;
+        Js._true
+      )
+
+    let on_display_previous_positions_set f =
+      let checkbox = get_by_id "display_previous_positions_checkbox" Dom_html.CoerceTo.input in
       checkbox##.onchange := Dom.handler (fun _ ->
         checkbox##.checked
         |> Js.to_bool

@@ -15,7 +15,7 @@ and max_density = ref 1.
 and fps = ref 25
 and duration = ref 30
 and filename_format = ref None
-and draw_velocity = ref false
+and display_velocity_vectors = ref false
 
 let speclist =
   OCSA.[
@@ -29,7 +29,7 @@ let speclist =
     ("--max-density", Set_float max_density, "max density");
     ("--fps", Set_int fps, "fps");
     ("--duration", Set_int duration, "duration");
-    ("--draw-velocity", Set draw_velocity, "draw velocity vectors");
+    ("--display-velocity-vectors", Set display_velocity_vectors, "display velocity vectors");
   ]
 
 let () = OCSA.parse speclist (fun format -> Exn.failure_unless (Opt.is_none !filename_format) "filename_format must be specified exactly once"; filename_format := Some format) "Usage: collide_cli [options] filename_format\n\nfilename_format is a Printf format for a single integer (like \"%08d.png\")\n\nOptions:"
@@ -45,7 +45,7 @@ and max_density = !max_density
 and fps = !fps
 and duration = !duration
 and filename_format = OCSS.format_from_string (Opt.value !filename_format ~exc:(Exn.Failure "filename_format must be specified exactly once")) "%d"
-and draw_velocity = !draw_velocity
+and display_velocity_vectors = !display_velocity_vectors
 
 let () = begin
   Exn.failure_unless (0 < width) "--width must be greater than 0 (got %i)" width;
@@ -77,7 +77,7 @@ let _ =
     let context = Cairo.create image in
     Cairo.set_source_rgb context ~r:1. ~g:1. ~b:1.;
     Cairo.paint context;
-    Drawer.draw ~context ~draw_velocity simulation;
+    Drawer.draw ~context ~display_velocity_vectors simulation;
     Cairo.PNG.write image (Frmt.apply filename_format i);
     let date = Fl.of_int i /. Fl.of_int fps in
     Simulation.advance simulation ~date

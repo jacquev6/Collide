@@ -11,7 +11,7 @@ template = """\
 
 (library (
   (name Collide)
-  (modules (Drawer Simulation GraphicalApplication))
+  (modules (Ring Drawer Simulation GraphicalApplication))
   (libraries (General JsOfOCairo)){coverage}
 ))
 

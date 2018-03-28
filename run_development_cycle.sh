@@ -76,7 +76,7 @@ then
     cp _builds/release/default/src/FileSaver.js _builds/cordova/www
     cp icon.png _builds/cordova
     cd _builds/cordova
-    cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr
+    cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr || (echo "Error during cordova-icon. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-icon.stdout and $PROJECT_ROOT/_builds/cordova/cordova-icon.stderr"; false)
     cordova build >cordova-build.stdout 2>cordova-build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-build.stdout and $PROJECT_ROOT/_builds/cordova/cordova-build.stderr"; false)
     cd $PROJECT_ROOT
     echo

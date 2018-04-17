@@ -16,17 +16,17 @@ let display_velocity_vectors_checkbox = GButton.check_button ~label:"Display vel
 let display_previous_positions_checkbox = GButton.check_button ~label:"Display previous positions" ~packing ()
 (* @todo Put these controls in a dialog, open it with a "Randomize..." button and randomize on "OK" *)
 let _ = GMisc.label ~text:"Balls: " ~packing ()
-let randomize_balls = GEdit.entry ~text:"10" ~width_chars:3 ~packing ()
+let randomize_balls = GEdit.entry ~text:(Int.to_string Application.Defaults.balls) ~width_chars:3 ~packing ()
 let _ = GMisc.label ~text:"Max speed: " ~packing ()
-let randomize_max_speed = GEdit.entry ~text:"100" ~width_chars:3 ~packing ()
+let randomize_max_speed = GEdit.entry ~text:(Fl.to_string Application.Defaults.max_speed) ~width_chars:3 ~packing ()
 let _ = GMisc.label ~text:"Radius: between: " ~packing ()
-let randomize_min_radius = GEdit.entry ~text:"3" ~width_chars:3 ~packing ()
+let randomize_min_radius = GEdit.entry ~text:(Fl.to_string Application.Defaults.min_radius) ~width_chars:3 ~packing ()
 let _ = GMisc.label ~text:" and " ~packing ()
-let randomize_max_radius = GEdit.entry ~text:"15" ~width_chars:3 ~packing ()
+let randomize_max_radius = GEdit.entry ~text:(Fl.to_string Application.Defaults.max_radius) ~width_chars:3 ~packing ()
 let _ = GMisc.label ~text:"Density: between: " ~packing ()
-let randomize_min_density = GEdit.entry ~text:"0.1" ~width_chars:3 ~packing ()
+let randomize_min_density = GEdit.entry ~text:(Fl.to_string Application.Defaults.min_density) ~width_chars:3 ~packing ()
 let _ = GMisc.label ~text:" and " ~packing ()
-let randomize_max_density = GEdit.entry ~text:"1" ~width_chars:3 ~packing ()
+let randomize_max_density = GEdit.entry ~text:(Fl.to_string Application.Defaults.max_density) ~width_chars:3 ~packing ()
 let randomize_button = GButton.button ~label:"Randomize" ~packing ()
 
 let graphical_view = GMisc.drawing_area ~packing:vbox#add ~width:320 ~height:240 ()
@@ -61,7 +61,7 @@ module App = GraphicalApplication.Make(struct
       let (width, height) = size () in
       let image = Cairo.Image.(create RGB24 ~width ~height) in
       let context = Cairo.create image in
-      f context;
+      f ~context;
       let context = Cairo_gtk.create graphical_view#misc#window in
       let pattern = Cairo.Pattern.create_for_surface image in
       Cairo.set_source context pattern;
@@ -72,7 +72,7 @@ module App = GraphicalApplication.Make(struct
       |> ignore
 
     let on_resized f =
-      graphical_view#event#connect#configure ~callback:(make_callback "graphical_view.configure" f true)
+      graphical_view#event#connect#configure ~callback:(make_callback "graphical_view.configure" (fun () -> f ~dimensions:(size ())) true)
       |> ignore
   end
 
@@ -83,26 +83,67 @@ module App = GraphicalApplication.Make(struct
   end
 
   module Toolbar = struct
-    let on_display_velocity_vectors_set f =
-      display_velocity_vectors_checkbox#connect#toggled ~callback:(make_callback "display_velocity_vectors_checkbox.toggled" (fun () -> f display_velocity_vectors_checkbox#active) ())
-      |> ignore
+    module Display = struct
+      type settings = {
+        velocity_vectors: bool;
+        previous_positions: int;
+      }
 
-    let on_display_previous_positions_set f =
-      display_previous_positions_checkbox#connect#toggled ~callback:(make_callback "display_previous_positions_checkbox.toggled" (fun () -> f display_previous_positions_checkbox#active) ())
-      |> ignore
+      let settings () = {
+        velocity_vectors = display_velocity_vectors_checkbox#active;
+        (* @todo Allow user to specify this number *)
+        previous_positions = if display_previous_positions_checkbox#active then 10 else 0;
+      }
+    end
 
-    let on_randomize f =
+    let on_display_settings_changed f = Display.(
+      let callback = make_callback "foo" (fun () ->
+        let {velocity_vectors; previous_positions} = Display.settings () in
+        f ~velocity_vectors ~previous_positions
+      ) () in
+      ignore (display_velocity_vectors_checkbox#connect#toggled ~callback, display_previous_positions_checkbox#connect#toggled ~callback)
+    )
+
+    module Randomize = struct
+      type settings = {
+        balls: int;
+        max_speed: float;
+        min_radius: float;
+        max_radius: float;
+        min_density: float;
+        max_density: float;
+      }
+
+      let settings () =
+        {
+          balls = randomize_balls#text |> Int.of_string;
+          max_speed = randomize_max_speed#text |> Fl.of_string;
+          min_radius = randomize_min_radius#text |> Fl.of_string;
+          max_radius = randomize_max_radius#text |> Fl.of_string;
+          min_density = randomize_min_density#text |> Fl.of_string;
+          max_density = randomize_max_density#text |> Fl.of_string;
+        }
+    end
+
+    let on_randomize f = Randomize.(
       randomize_button#connect#clicked ~callback:(fun _ ->
-        let balls = randomize_balls#text |> Int.of_string
-        and max_speed = randomize_max_speed#text |> Fl.of_string
-        and min_radius = randomize_min_radius#text |> Fl.of_string
-        and max_radius = randomize_max_radius#text |> Fl.of_string
-        and min_density = randomize_min_density#text |> Fl.of_string
-        and max_density = randomize_max_density#text |> Fl.of_string in
+        let {balls; max_speed; min_radius; max_radius; min_density; max_density} = settings () in
         f ~balls ~max_speed ~min_radius ~max_radius ~min_density ~max_density
       )
       |> ignore
+    )
   end
+
+  let initialize_app create =
+    let dimensions = GraphicalView.size ()
+    and {Toolbar.Randomize.balls; max_speed; min_radius; max_radius; min_density; max_density} = Toolbar.Randomize.settings ()
+    and {Toolbar.Display.velocity_vectors; previous_positions} = Toolbar.Display.settings () in
+    create
+      ~dimensions
+      ~balls ~max_speed
+      ~min_radius ~max_radius
+      ~min_density ~max_density
+      ~velocity_vectors ~previous_positions
 end)
 
 let () = GMain.main ()

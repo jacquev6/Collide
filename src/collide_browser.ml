@@ -9,28 +9,25 @@ module App = GraphicalApplication.Make(struct
   module Cairo = JsOfOCairo
 
   module GraphicalView = struct
-    let graphical_view = get_by_id "graphical_view" Dom_html.CoerceTo.canvas
+    let canvas = get_by_id "graphical_view" Dom_html.CoerceTo.canvas
 
     let with_context f =
-      f (JsOfOCairo.create graphical_view)
+      let context = JsOfOCairo.create canvas in
+      f ~context
 
     let size () =
-      (graphical_view##.width, graphical_view##.height)
-
-    let on_refresh_needed f =
-      (* No refresh event on HTML canvas; just draw it now *)
-      f ()
+      (canvas##.width, canvas##.height)
 
     let resize_canvas () =
-      graphical_view##.height := Js.Optdef.get Dom_html.window##.innerHeight (fun () -> 320);
-      graphical_view##.width := Js.Optdef.get Dom_html.window##.innerWidth (fun () -> 240)
+      canvas##.height := Js.Optdef.get Dom_html.window##.innerHeight (fun () -> 320);
+      canvas##.width := Js.Optdef.get Dom_html.window##.innerWidth (fun () -> 240)
 
     let () = resize_canvas ()
 
     let on_resized f =
       Dom_html.window##.onresize := Dom.handler (fun _ ->
         resize_canvas ();
-        f ();
+        f ~dimensions:(size ());
         Js._true
       )
   end
@@ -42,42 +39,69 @@ module App = GraphicalApplication.Make(struct
   end
 
   module Toolbar = struct
-    let on_display_velocity_vectors_set f =
-      let checkbox = get_by_id "display_velocity_vectors_checkbox" Dom_html.CoerceTo.input in
-      checkbox##.onchange := Dom.handler (fun _ ->
-        checkbox##.checked
-        |> Js.to_bool
-        |> f;
-        Js._true
-      )
+    module Display = struct
+      let velocity_vectors = get_by_id "display_velocity_vectors" Dom_html.CoerceTo.input
+      let previous_positions = get_by_id "display_previous_positions" Dom_html.CoerceTo.input
 
-    let on_display_previous_positions_set f =
-      let checkbox = get_by_id "display_previous_positions_checkbox" Dom_html.CoerceTo.input in
-      checkbox##.onchange := Dom.handler (fun _ ->
-        checkbox##.checked
-        |> Js.to_bool
-        |> f;
-        Js._true
-      )
+      type settings = {
+        velocity_vectors: bool;
+        previous_positions: int;
+      }
 
-    let on_randomize f =
-      let randomize_button = get_by_id "randomize_button" Dom_html.CoerceTo.button
-      and randomize_balls = get_by_id "randomize_balls" Dom_html.CoerceTo.input
-      and randomize_max_speed = get_by_id "randomize_max_speed" Dom_html.CoerceTo.input
-      and randomize_min_radius = get_by_id "randomize_min_radius" Dom_html.CoerceTo.input
-      and randomize_max_radius = get_by_id "randomize_max_radius" Dom_html.CoerceTo.input
-      and randomize_min_density = get_by_id "randomize_min_density" Dom_html.CoerceTo.input
-      and randomize_max_density = get_by_id "randomize_max_density" Dom_html.CoerceTo.input in
-      randomize_button##.onclick := Dom.handler (fun _ ->
-        let balls = randomize_balls##.value |> Js.to_string |> Int.of_string
-        and max_speed = randomize_max_speed##.value |> Js.to_string |> Fl.of_string
-        and min_radius = randomize_min_radius##.value |> Js.to_string |> Fl.of_string
-        and max_radius = randomize_max_radius##.value |> Js.to_string |> Fl.of_string
-        and min_density = randomize_min_density##.value |> Js.to_string |> Fl.of_string
-        and max_density = randomize_max_density##.value |> Js.to_string |> Fl.of_string in
+      let settings () = {
+        velocity_vectors = velocity_vectors##.checked |> Js.to_bool;
+        (* @todo Allow user to specify this number *)
+        previous_positions = if (previous_positions##.checked |> Js.to_bool) then 10 else 0;
+      }
+    end
+
+    let on_display_settings_changed f = Display.(
+      let handler = Dom.handler (fun _ ->
+        let {velocity_vectors; previous_positions} = Display.settings () in
+        f ~velocity_vectors ~previous_positions;
+        Js._true
+      ) in
+      velocity_vectors##.onchange := handler;
+      previous_positions##.onchange := handler
+    )
+
+    module Randomize = struct
+      let button = get_by_id "randomize_button" Dom_html.CoerceTo.button
+      (* @todo Remove values from html file, and initialize them using Application.Defaults *)
+      let balls = get_by_id "randomize_balls" Dom_html.CoerceTo.input
+      let max_speed = get_by_id "randomize_max_speed" Dom_html.CoerceTo.input
+      let min_radius = get_by_id "randomize_min_radius" Dom_html.CoerceTo.input
+      let max_radius = get_by_id "randomize_max_radius" Dom_html.CoerceTo.input
+      let min_density = get_by_id "randomize_min_density" Dom_html.CoerceTo.input
+      let max_density = get_by_id "randomize_max_density" Dom_html.CoerceTo.input
+
+      type settings = {
+        balls: int;
+        max_speed: float;
+        min_radius: float;
+        max_radius: float;
+        min_density: float;
+        max_density: float;
+      }
+
+      let settings () =
+        {
+          balls = balls##.value |> Js.to_string |> Int.of_string;
+          max_speed = max_speed##.value |> Js.to_string |> Fl.of_string;
+          min_radius = min_radius##.value |> Js.to_string |> Fl.of_string;
+          max_radius = max_radius##.value |> Js.to_string |> Fl.of_string;
+          min_density = min_density##.value |> Js.to_string |> Fl.of_string;
+          max_density = max_density##.value |> Js.to_string |> Fl.of_string;
+        }
+    end
+
+    let on_randomize f = Randomize.(
+      button##.onclick := Dom.handler (fun _ ->
+        let {balls; max_speed; min_radius; max_radius; min_density; max_density} = settings () in
         f ~balls ~max_speed ~min_radius ~max_radius ~min_density ~max_density;
         Js._true
       )
+    )
 
     let _ = Js.Unsafe.eval_string {|
       jQuery("#toolbar").modal("show");
@@ -90,4 +114,15 @@ module App = GraphicalApplication.Make(struct
       })
     |}
   end
+
+  let initialize_app create =
+    let dimensions = GraphicalView.size ()
+    and {Toolbar.Randomize.balls; max_speed; min_radius; max_radius; min_density; max_density} = Toolbar.Randomize.settings ()
+    and {Toolbar.Display.velocity_vectors; previous_positions} = Toolbar.Display.settings () in
+    create
+      ~dimensions
+      ~balls ~max_speed
+      ~min_radius ~max_radius
+      ~min_density ~max_density
+      ~velocity_vectors ~previous_positions
 end)

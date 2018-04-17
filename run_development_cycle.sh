@@ -108,9 +108,10 @@ FORMAT=frame_%05d.png
 ../release/default/src/collide_cli.exe --help
 ../release/default/src/collide_cli.exe \
   --width 640 --height 480 \
-  --balls 100 --max-speed 300 \
+  --balls 10 --max-speed 100 \
   --min-density 1 --max-density 1 \
-  --min-radius 5 --max-radius 5 \
+  --min-radius 5 --max-radius 15 \
+  --velocity-vectors --previous-positions 5 \
   --fps $FPS --duration 3 \
   $FORMAT
 ffmpeg -loglevel panic -hide_banner -nostats -y -r $FPS -i $FORMAT -vcodec libx264 video.mp4

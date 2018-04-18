@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Collide</title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no">
+  <!--
+  Customize this policy to fit your own app's needs. For more guidance, see:
+      https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+  Some notes:
+      * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+      * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+      * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+          * Enable inline JS: add 'unsafe-inline' to default-src
+  -->
+  <!-- @todo Restore
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">-->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <link rel="icon" href="icon.png">
+
+  <link rel="stylesheet" href="bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm">
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      position: absolute;
+    }
+
+    .modal-body {
+      min-height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="graphical_view"></canvas>
+
+  <div class="modal" id="toolbar" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title">Collide</h1>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div id="jacquev6_ribbon_container" class="modal-body">
+          <p><input type="checkbox" id="display_velocity_vectors" /><label for="display_velocity_vectors">&nbsp;Display velocity vectors</label></p>
+          <p><input type="checkbox" id="display_previous_positions" /><label for="display_previous_positions">&nbsp;Display previous positions</label></p>
+          <p><button id="show_randomize_dialog_button" class="btn btn-primary">Randomize...</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="randomize_dialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title">Randomize</h1>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p><label for="randomize_balls">Balls:&nbsp;</label><input type="text" id="randomize_balls" value="10" size="8"/></p>
+          <p><label for="randomize_max_speed">Max speed:&nbsp;</label><input type="text" id="randomize_max_speed" value="100" size="8"/></p>
+          <p><label for="randomize_min_radius">Radius: between&nbsp;</label><input type="text" id="randomize_min_radius" value="3" size="3"/><label for="randomize_max_radius">&nbsp;and&nbsp;</label><input type="text" id="randomize_max_radius" value="15" size="3"/></p>
+          <p><label for="randomize_min_density">Density: between&nbsp;</label><input type="text" id="randomize_min_density" value="0.1" size="3"/><label for="randomize_max_density">&nbsp;and&nbsp;</label><input type="text" id="randomize_max_density" value="1" size="3"/></p>
+          <p><button id="randomize_button" class="btn btn-primary">Randomize</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"></script>
+  <script src="popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"></script>
+  <script src="bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"></script>
+  <script src="FileSaver.js"></script>
+  <script src="collide_browser.bc.js"></script>
+  <script src="https://jacquev6.github.io/ribbon.1.js" data-container="#jacquev6_ribbon_container" data-github="Collide"></script>
+</body>
+</html>

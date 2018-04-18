@@ -18,6 +18,7 @@ template = """\
 
 (executable (
   (name collide_cli)
+  (public_name collide_cli)
   (modules (collide_cli))
   (libraries (Collide cairo2))
 ))
@@ -25,6 +26,7 @@ template = """\
 
 (executable (
   (name collide_gtk)
+  (public_name collide_gtk)
   (modules (collide_gtk))
   (libraries (Collide cairo2 threads lablgtk2 cairo2.lablgtk2))
 ))

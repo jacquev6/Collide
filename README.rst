@@ -25,15 +25,22 @@ Platforms
 Web browser
 -----------
 
-Just go to `http://jacquev6.github.io/Collide <http://jacquev6.github.io/Collide>`_.
+Just go to http://jacquev6.github.io/Collide.
 
 Native applications
 -------------------
 
-A command-line application (generating a video) and a graphical application can be installed natively with::
+Native applications can be installed using `OPAM <https://opam.ocaml.org/>`_::
 
     $ opam pin add --yes Collide https://github.com/jacquev6/Collide.git
-    $ opam install --yes Collide
+
+You can then run the command-line application (generating video frames)::
+
+    $ collide_cli --help
+
+And the graphical application::
+
+    $ collide_gtk
 
 Mobile applications
 -------------------

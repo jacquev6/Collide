@@ -123,9 +123,9 @@ publish = dict(
 )
 
 flavors = dict(
-  coverage=coverage,
-  release=release,
-  publish=publish,
+    coverage=coverage,
+    release=release,
+    publish=publish,
 )
 
 with open(__file__[:-3], "w") as f:

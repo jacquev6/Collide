@@ -36,6 +36,8 @@ let speclist =
 
 let () = OCSA.parse speclist (fun format -> Exn.failure_unless (Opt.is_none !filename_format) "filename_format must be specified exactly once"; filename_format := Some format) "Usage: collide_cli [options] filename_format\n\nfilename_format is a Printf format for a single integer (like \"%08d.png\")\n\nOptions:"
 
+let raw_filename_format = Opt.value !filename_format ~exc:(Exn.Failure "filename_format must be specified exactly once")
+
 let width = !width
 and height = !height
 and balls = !balls
@@ -46,7 +48,7 @@ and min_density = !min_density
 and max_density = !max_density
 and fps = !fps
 and duration = !duration
-and filename_format = OCSS.format_from_string (Opt.value !filename_format ~exc:(Exn.Failure "filename_format must be specified exactly once")) "%d"
+and filename_format = OCSS.format_from_string raw_filename_format "%d"
 and velocity_vectors = !velocity_vectors
 and previous_positions = !previous_positions
 
@@ -73,3 +75,9 @@ let _ =
     let date = Fl.of_int (i + 1) /. Fl.of_int fps in
     Application.advance application ~date
   )
+
+(* @todo Use https://opam.ocaml.org/packages/ffmpeg/ to generate the video ourself.
+Sadly, I got compile errors during "opam install ffmpeg" and didn't want to spend time investigating.
+When we implement that, we must keep the ffmpeg dependency optional (and fall back to generating frames)
+to avoid blocking people who have the same issue. Alternatively we could call ffmpeg or avconv as a subprocess? *)
+let _ = StdOut.print "You may want to make a video from the generated frames using: ffmpeg -r %i -i %s -vcodec libx264 video.mp4" fps raw_filename_format

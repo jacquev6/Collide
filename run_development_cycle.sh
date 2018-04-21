@@ -99,6 +99,34 @@ then
       echo "Try the Cordova Android application: adb install $PROJECT_ROOT/_builds/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
     fi
     echo
+
+    if [ -f "$ANDROID_KEYSTORE_FILE" -a ! -z "$ANDROID_KEYSTORE_PASSWORD" ]
+    then
+      # I tried signing the .apk as described here:
+      #   https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#signing-an-app
+      # But I got errors like
+      #   Execution failed for task ':app:packageRelease'.
+      #   > Failed to generate v1 signature
+      # So I went back to manual signing as described in:
+      #   https://codeburst.io/publish-a-cordova-generated-android-app-to-the-google-play-store-c7ae51cccdd5
+      cd _builds/cordova
+      cordova build android --release >cordova-build-release.stdout 2>cordova-build-release.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-build-release.stdout and $PROJECT_ROOT/_builds/cordova/cordova-build-release.stderr"; false)
+
+      GOOGLE_PLAY_APK=Collide.$(git describe --tags --dirty).GooglePlay.apk
+      cp platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk $GOOGLE_PLAY_APK.tmp.apk
+      jarsigner -verbose -keystore $ANDROID_KEYSTORE_FILE -storepass $ANDROID_KEYSTORE_PASSWORD -sigalg SHA1withRSA -digestalg SHA1 $GOOGLE_PLAY_APK.tmp.apk GooglePlayUpload >jarsigner.stdout 2>jarsigner.stderr || (echo "Error during .apk signing. Have a look at $PROJECT_ROOT/_builds/cordova/jarsigner.stdout and $PROJECT_ROOT/_builds/cordova/jarsigner.stderr"; false)
+      zipalign -v -f 4 $GOOGLE_PLAY_APK.tmp.apk $GOOGLE_PLAY_APK >zipalign.stdout 2>zipalign.stderr || (echo "Error during .apk zipalign. Have a look at $PROJECT_ROOT/_builds/cordova/zipalign.stdout and $PROJECT_ROOT/_builds/cordova/zipalign.stderr"; false)
+      rm $GOOGLE_PLAY_APK.tmp.apk
+
+      AMAZON_APPSTORE_APK=Collide.$(git describe --tags --dirty).AmazonAppstore.apk
+      cp platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk $AMAZON_APPSTORE_APK
+
+      cd $PROJECT_ROOT
+      echo "Production application files:"
+      echo "  - $PROJECT_ROOT/_builds/cordova/$GOOGLE_PLAY_APK"
+      echo "  - $PROJECT_ROOT/_builds/cordova/$AMAZON_APPSTORE_APK"
+      echo
+    fi
   fi
 fi
 

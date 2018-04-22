@@ -1,5 +1,6 @@
 opam-version: "1.2"
-version: "1.0"
+# WARNING: version is duplicated in cordova/config.xml
+version: "1.0.1"
 maintainer: "Vincent Jacques <vincent@vincent-jacques.net>"
 authors: "Vincent Jacques <vincent@vincent-jacques.net>"
 homepage: "https://jacquev6.github.io/Collide/"

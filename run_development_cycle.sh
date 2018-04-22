@@ -80,20 +80,15 @@ then
 
   if (which cordova && which cordova-icon) >/dev/null
   then
-    if ! [ -d _builds/cordova ]
-    then
-      cordova create _builds/cordova net.jacquev6.Collide Collide
-      cd _builds/cordova
-      cordova platform add android
-      cordova platform add browser
-      rm -r www/js www/css www/img
-    fi
-    cd $PROJECT_ROOT
+    mkdir -p _builds/cordova/www
+    cp cordova/config.xml _builds/cordova
+    cp cordova/package.json _builds/cordova
     cp _builds/release/default/src/collide_browser.html _builds/cordova/www/index.html
     cp _builds/release/default/src/*.css _builds/cordova/www
     cp _builds/release/default/src/*.js _builds/cordova/www
     cp media/icon-1240.png _builds/cordova/icon.png
     cd _builds/cordova
+    cordova prepare
     cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr || (echo "Error during cordova-icon. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-icon.stdout and $PROJECT_ROOT/_builds/cordova/cordova-icon.stderr"; false)
     cordova build >cordova-build.stdout 2>cordova-build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-build.stdout and $PROJECT_ROOT/_builds/cordova/cordova-build.stderr"; false)
     cd $PROJECT_ROOT

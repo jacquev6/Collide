@@ -1,0 +1,2 @@
+# www directory required to avoid Cordova errors like:
+#   Current working directory is not a Cordova-based project.

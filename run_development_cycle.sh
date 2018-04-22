@@ -51,6 +51,18 @@ echo "Try the GTK+ application: $PROJECT_ROOT/_builds/release/default/src/collid
 echo
 
 
+if which convert
+then
+  cd media
+  git clean -fXd resized
+  for size in 16 114 512
+  do
+    convert icon-1240.png -resize ${size}x${size} resized/icon-${size}.png
+  done
+  cd $PROJECT_ROOT
+fi
+
+
 if which browserify >/dev/null
 then
   jbuilder_flavor release build @collide_browser
@@ -61,7 +73,7 @@ then
   grep -v "cordova\.js" _builds/release/default/src/collide_browser.html >docs/index.html
   cp _builds/release/default/src/*.css docs
   cp _builds/release/default/src/*.js docs
-  cp icon.png docs
+  cp media/resized/icon-16.png docs
   echo
   echo "Try the in-browser application: $PROJECT_ROOT/docs/index.html"
   echo
@@ -80,7 +92,7 @@ then
     cp _builds/release/default/src/collide_browser.html _builds/cordova/www/index.html
     cp _builds/release/default/src/*.css _builds/cordova/www
     cp _builds/release/default/src/*.js _builds/cordova/www
-    cp icon.png _builds/cordova
+    cp media/icon-1240.png _builds/cordova/icon.png
     cd _builds/cordova
     cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr || (echo "Error during cordova-icon. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-icon.stdout and $PROJECT_ROOT/_builds/cordova/cordova-icon.stderr"; false)
     cordova build >cordova-build.stdout 2>cordova-build.stderr || (echo "Error during cordova build. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-build.stdout and $PROJECT_ROOT/_builds/cordova/cordova-build.stderr"; false)

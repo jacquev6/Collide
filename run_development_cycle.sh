@@ -53,13 +53,11 @@ echo
 
 if which convert
 then
-  cd media
-  git clean -fXd resized
-  for size in 16 114 512
+  mkdir -p _builds/media
+  for size in 16 114 512 1240
   do
-    convert icon-1240.png -resize ${size}x${size} resized/icon-${size}.png
+    convert media/icon-1240.png -resize ${size}x${size} _builds/media/icon-${size}.png
   done
-  cd $PROJECT_ROOT
 fi
 
 
@@ -73,7 +71,7 @@ then
   grep -v "cordova\.js" _builds/release/default/src/collide_browser.html >docs/index.html
   cp _builds/release/default/src/*.css docs
   cp _builds/release/default/src/*.js docs
-  cp media/resized/icon-16.png docs
+  cp _builds/media/icon-16.png docs
   echo
   echo "Try the in-browser application: $PROJECT_ROOT/docs/index.html"
   echo
@@ -86,7 +84,7 @@ then
     cp _builds/release/default/src/collide_browser.html _builds/cordova/www/index.html
     cp _builds/release/default/src/*.css _builds/cordova/www
     cp _builds/release/default/src/*.js _builds/cordova/www
-    cp media/icon-1240.png _builds/cordova/icon.png
+    cp _builds/media/icon-1240.png _builds/cordova/icon.png
     cd _builds/cordova
     cordova prepare
     cordova-icon >cordova-icon.stdout 2>cordova-icon.stderr || (echo "Error during cordova-icon. Have a look at $PROJECT_ROOT/_builds/cordova/cordova-icon.stdout and $PROJECT_ROOT/_builds/cordova/cordova-icon.stderr"; false)

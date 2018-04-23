@@ -47,7 +47,7 @@ Mobile applications
 
 Thanks to `Apache Cordova <http://cordova.apache.org/>`_, Collide is available on the following app stores:
 
-- `Google Play <@todo>`_
+- `Google Play <https://play.google.com/store/apps/details?id=net.jacquev6.Collide>`_
 - `Amazon Appstore <https://www.amazon.com/dp/B07C8BWRZW>`_
 
 It should be easy to publish as an iPhone, BlackBerry or Windows Phone app, but I have not tried.

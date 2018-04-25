@@ -18,11 +18,10 @@ addons:
 install:
   - opam init --yes
   - opam update --yes
-  - opam switch --yes $OCAML_VERSION
+  - travis_wait 30 opam switch --yes $OCAML_VERSION
   - eval `opam config env`
-  - opam switch
   - opam pin add --yes --no-action General --dev-repo
-  - opam install --yes jbuilder js_of_ocaml-ppx js_of_ocaml-compiler General JsOfOCairo cairo2 lablgtk
+  - opam install --yes General JsOfOCairo cairo2 jbuilder lablgtk
   - opam upgrade --yes
   - opam list
 script:

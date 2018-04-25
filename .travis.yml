@@ -1,3 +1,5 @@
+# GENERATED SECTION, MANUAL EDITS WILL BE LOST
+# GENI: whole(dict(dependencies=["JsOfOCairo", "General", "lablgtk", "cairo2"], versions=["4.06.1", "4.06.1+flambda"]))
 language: c
 dist: trusty
 sudo: false
@@ -7,11 +9,12 @@ addons:
     - avsm
     packages:
     - aspcud
-    - opam
     - libcairo2-dev
+    - libgif-dev
+    - libgtk2.0-dev
     - libjpeg8-dev
     - libpango1.0-dev
-    - libgif-dev
+    - opam
 install:
   - opam init --yes
   - opam update --yes
@@ -30,3 +33,4 @@ env:
 cache:
   directories:
   - $HOME/.opam
+# END OF GENERATED SECTION

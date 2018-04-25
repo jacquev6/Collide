@@ -1,0 +1,35 @@
+# GENERATED SECTION, MANUAL EDITS WILL BE LOST
+# GENI: whole(dict(dependencies=["JsOfOCairo", "General", "lablgtk", "cairo2"], versions=["4.06.1", "4.06.1+flambda"]))
+language: c
+dist: trusty
+sudo: false
+addons:
+  apt:
+    sources:
+    - avsm
+    packages:
+    - aspcud
+    - libcairo2-dev
+    - libgif-dev
+    - libgtk2.0-dev
+    - libjpeg8-dev
+    - libpango1.0-dev
+    - opam
+install:
+  - opam init --yes
+  - opam update --yes
+  - travis_wait 30 opam switch --yes $OCAML_VERSION
+  - eval `opam config env`
+  - opam pin add --yes --no-action General --dev-repo
+  - opam install --yes General JsOfOCairo cairo2 jbuilder lablgtk
+  - opam upgrade --yes
+  - opam list
+script:
+  - jbuilder runtest
+env:
+  - OCAML_VERSION=4.06.1
+  - OCAML_VERSION=4.06.1+flambda
+cache:
+  directories:
+  - $HOME/.opam
+# END OF GENERATED SECTION

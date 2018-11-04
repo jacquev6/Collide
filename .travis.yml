@@ -20,7 +20,6 @@ install:
   - opam update --yes
   - travis_wait 30 opam switch --yes $OCAML_VERSION
   - eval `opam config env`
-  - opam pin add --yes --no-action General --dev-repo
   - opam install --yes General JsOfOCairo cairo2 jbuilder lablgtk
   - opam upgrade --yes
   - opam list

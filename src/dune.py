@@ -28,7 +28,7 @@ def gen(flavor):
     yield '  (name collide_gtk)'
     yield '  (public_name collide_gtk)'
     yield '  (modules collide_gtk)'
-    yield '  (libraries Collide cairo2 threads lablgtk2 cairo2.lablgtk2)'
+    yield '  (libraries Collide cairo2 threads lablgtk2 cairo2-gtk)'
     yield ')'
     yield ''
     yield ''

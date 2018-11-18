@@ -5,19 +5,19 @@ module Make(C: JsOfOCairo.S) = struct
   let draw_ball ~context ~velocity_vectors ~alpha {Simulation.Ball.radius; density; position=(x, y); velocity=(vx, vy)} =
     C.save context;
     let rgb = 0.7 *. (1. -. density) in
-    C.set_source_rgba context ~r:rgb ~g:rgb ~b:rgb ~a:alpha;
-    C.arc context ~x ~y ~r:radius ~a1:0. ~a2:(2. *. Fl.pi);
+    C.set_source_rgba context rgb rgb rgb alpha;
+    C.arc context x y ~r:radius ~a1:0. ~a2:(2. *. Fl.pi);
     C.fill context;
     if velocity_vectors then begin
-      C.set_source_rgba context ~r:1. ~g:0. ~b:0. ~a:alpha;
-      C.move_to context ~x ~y;
-      C.rel_line_to context ~x:vx ~y:vy;
+      C.set_source_rgba context 1. 0. 0. alpha;
+      C.move_to context x y;
+      C.rel_line_to context vx vy;
       C.save context;
-      C.translate context ~x:(x +. vx) ~y:(y +. vy);
-      C.rotate context ~angle:(Fl.atan2 ~x:vx ~y:vy);
-      C.move_to context ~x:(-10.) ~y:(-10.);
-      C.line_to context ~x:0. ~y:0.;
-      C.line_to context ~x:(-10.) ~y:10.;
+      C.translate context (x +. vx) (y +. vy);
+      C.rotate context (Fl.atan2 ~x:vx ~y:vy);
+      C.move_to context (-10.) (-10.);
+      C.line_to context 0. 0.;
+      C.line_to context (-10.) 10.;
       C.restore context;
       C.stroke context;
     end;

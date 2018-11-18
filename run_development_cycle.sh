@@ -139,7 +139,7 @@ then
   opam switch create $DEV_WITH_OLDEST_VERSIONS 4.06.1 --no-switch
 fi
 opam_switch $DEV_WITH_OLDEST_VERSIONS
-opam install --yes General.0.6.0 JsOfOCairo.1.1.1 bisect-summary bisect_ppx cairo2.0.5 dune.1.4.0 lablgtk.2.18.6
+opam install --yes General.0.6.0 JsOfOCairo.2.0.0 bisect-summary bisect_ppx cairo2-gtk.0.6 cairo2.0.6 dune.1.4.0 lablgtk.2.18.6
 
 DEV_WITH_NEWEST_VERSIONS=4.07.1.Collide.dev_with_newest_versions
 if ! opam switch list --short | grep "^$DEV_WITH_NEWEST_VERSIONS$" >/dev/null
@@ -147,12 +147,9 @@ then
   opam switch create $DEV_WITH_NEWEST_VERSIONS 4.07.1 --no-switch
 fi
 opam_switch $DEV_WITH_NEWEST_VERSIONS
-opam install --yes General JsOfOCairo cairo2 dune lablgtk
+opam install --yes General JsOfOCairo cairo2 cairo2-gtk dune lablgtk
 if $DO_OPAM_UPGRADE; then opam upgrade --yes; fi
 # END OF GENERATED SECTION
-
-
-opam install --yes cairo2.0.5
 
 
 # GENI: run_tests

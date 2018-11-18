@@ -82,7 +82,7 @@ module Make(C: JsOfOCairo.S) = struct
 
   let draw {simulations; velocity_vectors} ~context =
     C.save context;
-    C.set_source_rgb context ~r:1. ~g:1. ~b:1.;
+    C.set_source_rgb context 1. 1. 1.;
     C.paint context;
     Drawer.draw ~context ~velocity_vectors (Ring.get simulations ~index:0);
     let size = Ring.size simulations in

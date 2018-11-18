@@ -17,13 +17,16 @@ ocaml:
       - dune:
           at_least: 1.4.0
       - JsOfOCairo:
-          at_least: 1.1.1
-          less_than: 2
+          at_least: 2.0.0
+          less_than: 3
     run:
       - General:
           at_least: 0.6.0
       - cairo2:
-          at_least: 0.5
-          less_than: 0.6
+          at_least: 0.6
+          less_than: 0.7
+      - cairo2-gtk:
+          at_least: 0.6
+          less_than: 0.7
       - lablgtk:
           at_least: 2.18.6

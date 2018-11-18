@@ -38,8 +38,8 @@ let () = OCSA.parse speclist (fun format -> Exn.failure_unless (Opt.is_none !fil
 
 let raw_filename_format = Opt.value !filename_format ~exc:(Exn.Failure "filename_format must be specified exactly once")
 
-let width = !width
-and height = !height
+let w = !width
+and h = !height
 and balls = !balls
 and max_speed = !max_speed
 and min_radius = !min_radius
@@ -55,7 +55,7 @@ and previous_positions = !previous_positions
 module Application = Application.Make(Cairo)
 
 let application = Application.create
-  ~dimensions:(width, height)
+  ~dimensions:(w, h)
   ~balls ~max_speed
   ~min_radius ~max_radius
   ~min_density ~max_density
@@ -68,7 +68,7 @@ let _ = StdOut.print ~flush:true "Generating %i frames (%is at %ifps), named %s,
 let _ =
   IntRa.make frames
   |> IntRa.iter ~f:(fun i ->
-    let image = Cairo.Image.(create RGB24 ~width ~height) in
+    let image = Cairo.Image.(create RGB24 ~w ~h) in
     let context = Cairo.create image in
     Application.draw application ~context;
     Cairo.PNG.write image (Frmt.apply filename_format i);

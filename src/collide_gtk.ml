@@ -58,8 +58,8 @@ module App = GraphicalApplication.Make(struct
       I have no idea why but I don't want to spend time investigating right now :-/ *)
 
     let with_context f =
-      let (width, height) = size () in
-      let image = Cairo.Image.(create RGB24 ~width ~height) in
+      let (w, h) = size () in
+      let image = Cairo.Image.(create RGB24 ~w ~h) in
       let context = Cairo.create image in
       f ~context;
       let context = Cairo_gtk.create graphical_view#misc#window in

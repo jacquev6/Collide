@@ -13,10 +13,11 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.06.1"}
-  "JsOfOCairo" {build & >= "1.1.1" & < "2"}
+  "JsOfOCairo" {build & >= "2.0.0" & < "3"}
   "dune" {build & >= "1.4.0"}
   "General" {>= "0.6.0"}
-  "cairo2" {>= "0.5" & < "0.6"}
+  "cairo2" {>= "0.6" & < "0.7"}
+  "cairo2-gtk" {>= "0.6" & < "0.7"}
   "lablgtk" {>= "2.18.6"}
 ]
 synopsis:

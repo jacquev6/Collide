@@ -1,0 +1,29 @@
+format: 1
+project:
+  name: Collide
+  version: 1.0.1
+  short_descriptions:
+    github: Event-based simulation of elastic collisions between balls
+    readme:
+      - "*Collide* is an `event-based simulation <https://en.wikipedia.org/wiki/Discrete_event_simulation>`_ of `elastic collisions <https://en.wikipedia.org/wiki/Elastic_collision>`_ between balls."
+      - It demonstrates how a single OCaml code base can run on multiple platforms (see below).
+      - And it's mildly entertaining to watch.
+    opam: Event-based simulation of elastic collisions between balls
+ocaml:
+  versions:
+    at_least: 4.06.1
+  dependencies:
+    build:
+      - dune:
+          at_least: 1.4.0
+      - JsOfOCairo:
+          at_least: 1.1.1
+          less_than: 2
+    run:
+      - General:
+          at_least: 0.6.0
+      - cairo2:
+          at_least: 0.5
+          less_than: 0.6
+      - lablgtk:
+          at_least: 2.18.6

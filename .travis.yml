@@ -1,12 +1,8 @@
-# GENERATED SECTION, MANUAL EDITS WILL BE LOST
-# GENI: whole(dict(dependencies=["JsOfOCairo", "General", "lablgtk", "cairo2"], versions=["4.06.1", "4.06.1+flambda"]))
 language: c
 dist: trusty
 sudo: false
 addons:
   apt:
-    sources:
-    - avsm
     packages:
     - aspcud
     - libcairo2-dev
@@ -14,21 +10,22 @@ addons:
     - libgtk2.0-dev
     - libjpeg8-dev
     - libpango1.0-dev
-    - opam
 install:
-  - opam init --yes
-  - opam update --yes
-  - travis_wait 30 opam switch --yes $OCAML_VERSION
-  - eval `opam config env`
-  - opam install --yes General JsOfOCairo cairo2 jbuilder lablgtk
-  - opam upgrade --yes
-  - opam list
+  - wget --output-document=$HOME/opam2 https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux
+  - chmod +x $HOME/opam2
+  - test -d $HOME/.opam/$OCAML_VERSION || $HOME/opam2 init --yes --disable-sandboxing --compiler=$OCAML_VERSION
+  - $HOME/opam2 update --yes
+  - eval `$HOME/opam2 config env`
+  - $HOME/opam2 switch list
+  - $HOME/opam2 install --yes General$GENERAL_VERSION JsOfOCairo$JSOFOCAIRO_VERSION cairo2$CAIRO2_VERSION dune$DUNE_VERSION lablgtk$LABLGTK_VERSION
+  - if $UPGRADE_OPAM; then $HOME/opam2 upgrade --yes; fi
+  - $HOME/opam2 list
 script:
-  - jbuilder runtest
+  - dune runtest
 env:
-  - OCAML_VERSION=4.06.1
-  - OCAML_VERSION=4.06.1+flambda
+  - OCAML_VERSION=4.06.1 GENERAL_VERSION=.0.6.0 JSOFOCAIRO_VERSION=.1.1.1 CAIRO2_VERSION=.0.5 DUNE_VERSION=.1.4.0 LABLGTK_VERSION=.2.18.6 UPGRADE_OPAM=false
+  - OCAML_VERSION=4.07.1 UPGRADE_OPAM=true
+  - OCAML_VERSION=4.07.1+flambda UPGRADE_OPAM=true
 cache:
   directories:
   - $HOME/.opam
-# END OF GENERATED SECTION

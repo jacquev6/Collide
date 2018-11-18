@@ -1,9 +1,22 @@
+.. GENI: intro
+.. GENERATED SECTION, MANUAL EDITS WILL BE LOST
+
 *Collide* is an `event-based simulation <https://en.wikipedia.org/wiki/Discrete_event_simulation>`_ of `elastic collisions <https://en.wikipedia.org/wiki/Elastic_collision>`_ between balls.
 It demonstrates how a single OCaml code base can run on multiple platforms (see below).
 And it's mildly entertaining to watch.
 
+.. END OF GENERATED SECTION
+
+.. GENI: info
+.. GENERATED SECTION, MANUAL EDITS WILL BE LOST
+
 It's licensed under the `MIT license <http://choosealicense.com/licenses/mit/>`_.
 Its `source code <https://github.com/jacquev6/Collide>`_ is on GitHub.
+
+.. END OF GENERATED SECTION
+
+.. GENI: badges
+.. GENERATED SECTION, MANUAL EDITS WILL BE LOST
 
 Questions? Remarks? Bugs? Want to contribute? `Open an issue <https://github.com/jacquev6/Collide/issues>`_!
 
@@ -18,6 +31,8 @@ Questions? Remarks? Bugs? Want to contribute? `Open an issue <https://github.com
 
 .. image:: https://img.shields.io/github/stars/jacquev6/Collide.svg
     :target: https://github.com/jacquev6/Collide/stargazers
+
+.. END OF GENERATED SECTION
 
 Platforms
 =========

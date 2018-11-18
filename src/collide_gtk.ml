@@ -67,10 +67,6 @@ module App = GraphicalApplication.Make(struct
       Cairo.set_source context pattern;
       Cairo.paint context
 
-    let on_refresh_needed f =
-      graphical_view#event#connect#expose ~callback:(make_callback "graphical_view.expose" f true)
-      |> ignore
-
     let on_resized f =
       graphical_view#event#connect#configure ~callback:(make_callback "graphical_view.configure" (fun () -> f ~dimensions:(size ())) true)
       |> ignore
